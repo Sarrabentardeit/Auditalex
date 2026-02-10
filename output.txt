@@ -1,0 +1,100 @@
+﻿python : 
+C:\Users\ThinkPad\AppData\Local\Programs\Python\Python311\Lib\site-packages\openpyxl\worksheet\_reader.py:329: 
+UserWarning: Data Validation extension is not supported and will be removed
+Au caractère C:\Users\ThinkPad\AppData\Local\Temp\ps-script-1279422c-3063-4deb-bdc8-3c9027bd5577.ps1:81 : 39
++ ... C:\Users\ThinkPad\Desktop\Audit"; python extract_data.py 2>&1 | Out-F ...
++                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (C:\Users\ThinkP...will be removed:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  warn(msg)
+================================================================================
+EXTRACTION DES DONN╔ES STRUCTUR╔ES
+================================================================================
+
+================================================================================
+1. STRUCTURE DE LA GRILLE DE COTATION
+================================================================================
+
+Nombre de catÚgories trouvÚes: 6
+
+  1. LOCAUX ET EQUIPEMENTS
+    Nombre d'items: 3
+      - Lutte contre les nuisibles
+        PondÚration: 0.333, Note: 0.333
+      - Maintenance des locaux et Úquipements
+        PondÚration: 0.333, Note: 0.333
+
+  2. MAITRISE DES TEMP╔RATURES 
+    Nombre d'items: 2
+      - Ma¯trise du froid positif et nÚgatif (enregistrement de tempÚratures, tempÚratures effectives, joints, givreà)
+        PondÚration: 0.5, Note: 0.5
+      - Ma¯trise du chaud (Bain-marie, friteuses, grilles de fourà)
+        PondÚration: 0.5, Note: 0.5
+
+  3. MAITRISE DES MATI╚RES 
+    Nombre d'items: 3
+      - Contr¶le Ó rÚception
+        PondÚration: 0.333, Note: 0.333
+      - Gestions des conditionnements et emballages
+        PondÚration: 0.333, Note: 0.333
+
+  4. TRACABILITE ET GESTION DES NON-CONFORMITES
+    Nombre d'items: 3
+      - SystÞme de traþabilitÚ (RÚalisation, qualitÚ des photos, traþabilitÚ fonctionnelleà)
+        PondÚration: 0.333, Note: 0.333
+      - Gestion des non-conformitÚs
+        PondÚration: 0.333, Note: 0.333
+
+  5. GESTION DES DECHETS ET DES SOUS-PRODUITS ANIMAUX
+    Nombre d'items: 2
+      - Gestion des dÚchets
+        PondÚration: 0.5, Note: 0.5
+      - Gestions des poubelles
+        PondÚration: 0.5, Note: 0.5
+
+  6. GESTION DU PERSONNEL
+    Nombre d'items: 2
+      - HygiÞne et Úquipements du personnel (lave-mains et consommables, sanitaires, vestiairesà)
+        PondÚration: 0.5, Note: 0.5
+      - Formation et instructions Ó disposition du personnel
+        PondÚration: 0.5, Note: 0.5
+
+================================================================================
+2. STRUCTURE DES LISTES D╔FILANTES
+================================================================================
+
+Nombre d'items avec observations: 21
+
+  1. LOCAUX ET EQUIPEMENTS
+    Nombre d'observations: 0
+
+  Lutte contre les nuisibles
+    Nombre d'observations: 2
+      - Contrat 3D en place
+      - EntrÚe potentielle de nuisibles
+
+  Maintenance des locaux et Úquipements
+    Nombre d'observations: 6
+      - Ensemble bien entretenu
+      - Joints des timbres froids dÚtÚriorÚs
+
+================================================================================
+3. STRUCTURE DE LA CARTOGRAPHIE
+================================================================================
+Dimensions: 48 lignes x 12 colonnes
+
+Recherche des formules de calcul...
+
+================================================================================
+4. EXPORT DES DONN╔ES STRUCTUR╔ES
+================================================================================
+
+[OK] Donnees exportees dans 'data_structure.json'
+   - 6 catÚgories
+   - 15 items au total
+   - 21 items avec observations
+
+================================================================================
+EXTRACTION TERMIN╔E
+================================================================================

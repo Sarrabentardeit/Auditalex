@@ -1,0 +1,539 @@
+{
+  "categories": [
+    {
+      "name": "1. LOCAUX ET EQUIPEMENTS",
+      "items": [
+        {
+          "name": "Lutte contre les nuisibles",
+          "ponderation": 0.333,
+          "note": 0.333,
+          "comments": [
+            "Contrat 3D en place"
+          ],
+          "actions": [
+            "Conforme"
+          ]
+        },
+        {
+          "name": "Maintenance des locaux et équipements",
+          "ponderation": 0.333,
+          "note": 0.333,
+          "comments": [
+            "Ensemble bien entretenu"
+          ],
+          "actions": [
+            "Conforme"
+          ]
+        },
+        {
+          "name": "Nettoyage et désinfection des locaux et équipements",
+          "ponderation": 0.334,
+          "note": 0.334,
+          "comments": [
+            "Produits de nettoyage conformes au plan de nettoyage affiché",
+            "Enregistrement du nettoyage effectué"
+          ],
+          "actions": [
+            "Conforme",
+            "Conforme"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. MAITRISE DES TEMPÉRATURES ",
+      "items": [
+        {
+          "name": "Maîtrise du froid positif et négatif (enregistrement de températures, températures effectives, joints, givre…)",
+          "ponderation": 0.5,
+          "note": 0.5,
+          "comments": [
+            "Froid maîtrisé",
+            "Enregistrement des relevés de températures effectué"
+          ],
+          "actions": [
+            "Conforme",
+            "Conforme"
+          ]
+        },
+        {
+          "name": "Maîtrise du chaud (Bain-marie, friteuses, grilles de four…)",
+          "ponderation": 0.5,
+          "note": 0.5,
+          "comments": [
+            "Chaud maîtrisé",
+            "enregistrement des changements d'huile"
+          ],
+          "actions": [
+            "Conforme",
+            "Conforme"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. MAITRISE DES MATIÈRES ",
+      "items": [
+        {
+          "name": "Contrôle à réception",
+          "ponderation": 0.333,
+          "note": 0.333,
+          "comments": [
+            "BL pris en photo avec prise de tempéature"
+          ],
+          "actions": [
+            "Conforme"
+          ]
+        },
+        {
+          "name": "Gestions des conditionnements et emballages",
+          "ponderation": 0.333,
+          "note": 0.333,
+          "comments": [
+            "Absence de cartons et emballages primaires en zone de production. Les aliments sont protégés et datés."
+          ],
+          "actions": [
+            "Conforme"
+          ]
+        },
+        {
+          "name": "Affichage (allergènes, origines des viandes…)",
+          "ponderation": 0.334,
+          "note": 0.334,
+          "comments": [
+            "Présence de l'affichage des allergènes et origine des viandes"
+          ],
+          "actions": [
+            "Conforme"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. TRACABILITE ET GESTION DES NON-CONFORMITES",
+      "items": [
+        {
+          "name": "Système de traçabilité (Réalisation, qualité des photos, traçabilité fonctionnelle…)",
+          "ponderation": 0.333,
+          "note": 0.333,
+          "comments": [
+            "La traçabilité est fonctionnelle"
+          ],
+          "actions": [
+            "Conforme"
+          ]
+        },
+        {
+          "name": "Gestion des non-conformités",
+          "ponderation": 0.333,
+          "note": 0.333,
+          "comments": [
+            "La gestion des non-conformités est réalisée"
+          ],
+          "actions": [
+            "Conforme"
+          ]
+        },
+        {
+          "name": "Gestion des actions correctives de l'audit précédent",
+          "ponderation": 0.334,
+          "note": 0.334,
+          "comments": [
+            "Des actions correctives de l'audit précédent ont été mises en place"
+          ],
+          "actions": [
+            "Conforme"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5. GESTION DES DECHETS ET DES SOUS-PRODUITS ANIMAUX",
+      "items": [
+        {
+          "name": "Gestion des déchets",
+          "ponderation": 0.5,
+          "note": 0.5,
+          "comments": [
+            "Les déchets sont régulièrement évacués"
+          ],
+          "actions": [
+            "Conforme"
+          ]
+        },
+        {
+          "name": "Gestions des poubelles",
+          "ponderation": 0.5,
+          "note": 0.5,
+          "comments": [
+            "Présence de poubelles fermées à pédale"
+          ],
+          "actions": [
+            "Conforme"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "6. GESTION DU PERSONNEL",
+      "items": [
+        {
+          "name": "Hygiène et équipements du personnel (lave-mains et consommables, sanitaires, vestiaires…)",
+          "ponderation": 0.5,
+          "note": 0.5,
+          "comments": [
+            "Tenue de travail conforme",
+            "Présence de lave-mains propres avec tous les consommables, vestiaires et sanitaires propres."
+          ],
+          "actions": [
+            "Conforme",
+            "Conforme"
+          ]
+        },
+        {
+          "name": "Formation et instructions à disposition du personnel",
+          "ponderation": 0.5,
+          "note": 0.5,
+          "comments": [
+            "Personnel formé et attestations présentes",
+            "nombre de KO :"
+          ],
+          "actions": [
+            "Conforme",
+            "0"
+          ]
+        }
+      ]
+    }
+  ],
+  "observations": {
+    "1. LOCAUX ET EQUIPEMENTS": [],
+    "Lutte contre les nuisibles": [
+      {
+        "observation": "Contrat 3D en place",
+        "action": "Conforme"
+      },
+      {
+        "observation": "Entrée potentielle de nuisibles",
+        "action": "Toutes les ouvertures doivent être fermées"
+      },
+      {
+        "observation": "Contrat 3D en place",
+        "action": "Mettre en place un contrat"
+      },
+      {
+        "observation": "Entrée potentielle de nuisibles",
+        "action": "Utiliser un désinsectiseur"
+      }
+    ],
+    "Maintenance des locaux et équipements": [
+      {
+        "observation": "Ensemble bien entretenu",
+        "action": "Conforme"
+      },
+      {
+        "observation": "Joints des timbres froids détériorés",
+        "action": "Changez les joints détériorés"
+      },
+      {
+        "observation": "Présence de givre excessif",
+        "action": "Dégivrez les installations de froids"
+      },
+      {
+        "observation": "Carrelages cassés",
+        "action": "Remplacez le carrelage cassé"
+      },
+      {
+        "observation": "Présence de rouille",
+        "action": "Prévoir des travaux de rénovation"
+      },
+      {
+        "observation": "Présence de peinture écaillée",
+        "action": ""
+      }
+    ],
+    "Nettoyage et désinfection des locaux et équipements": [
+      {
+        "observation": "Produits de nettoyage conformes au plan de nettoyage affiché",
+        "action": "Conforme"
+      },
+      {
+        "observation": "Ensemble propre et bien rangé",
+        "action": ""
+      },
+      {
+        "observation": "Présence de salissures anciennes sous le plan de travail ",
+        "action": "Effectuez un nettoyage plus approfondi notamment sous les plans de travail "
+      },
+      {
+        "observation": "Présence de salissures anciennes",
+        "action": "Effectuez un nettoyage plus approfondi"
+      },
+      {
+        "observation": "Enregistrement du nettoyage non effectué",
+        "action": "Effectuez l'enregistrement du nettoyage"
+      },
+      {
+        "observation": "Produits non conformes",
+        "action": "Procurez vous des produits nettoyants et désinfectants"
+      },
+      {
+        "observation": "Plans de nettoyage non affichés",
+        "action": "Affichez les plans de nettoyage"
+      },
+      {
+        "observation": "Le matériel de nettoyage est accroché",
+        "action": ""
+      },
+      {
+        "observation": "Le matériel de nettoyage est posé au sol ",
+        "action": "Accrochez le matériel de nettoyage"
+      },
+      {
+        "observation": "Le matériel de nettoyage est propre",
+        "action": ""
+      },
+      {
+        "observation": "Le matériel de nettoyage est sale",
+        "action": "Le matériel de nettoyage doit être nettoyé et désinfecté"
+      },
+      {
+        "observation": "Présence d'eau stagnante",
+        "action": "Asséchez au maximum après le nettoyage"
+      }
+    ],
+    "2. MAITRISE DES TEMPÉRATURES ": [],
+    "Maîtrise du froid positif et négatif (enregistrement de températures, températures effectives, joints, givre…)": [
+      {
+        "observation": "Froid maîtrisé",
+        "action": "Conforme"
+      },
+      {
+        "observation": "Refroidissement rapide maîtrisé",
+        "action": ""
+      },
+      {
+        "observation": "Refroidissement rapide non maîtrisé",
+        "action": "La baisse de température de 65°C à 3°C doit être effectuée en moins de 2 heures et enregistrée"
+      },
+      {
+        "observation": "Enregistrement du refroidissement rapide non effectué",
+        "action": "Ce contrôle est obligatoire"
+      },
+      {
+        "observation": "Enregistrement du refroidissement rapide effectué",
+        "action": ""
+      },
+      {
+        "observation": "Enregistrement des relevés de températures non effectué",
+        "action": "Effectuez l'enregistrement des relevés de températures"
+      },
+      {
+        "observation": "Enregistrement des relevés de températures effectué",
+        "action": ""
+      },
+      {
+        "observation": "Températures non conformes",
+        "action": "Effectuez une maintenance des installations de froid"
+      },
+      {
+        "observation": "Présence de denrées en décongélation à température ambiante",
+        "action": "La décongélation doit être réalisée en chambre froide"
+      }
+    ],
+    "Maîtrise du chaud (Bain-marie, friteuses, grilles de four…)": [
+      {
+        "observation": "Chaud maîtrisé",
+        "action": "Conforme"
+      },
+      {
+        "observation": "Températures buffets non conformes",
+        "action": "Revoir l'utilisation des buffets"
+      },
+      {
+        "observation": "Température bain-marie non conforme",
+        "action": "Revoir l'utilisation du bain-marie"
+      },
+      {
+        "observation": "TPM huile de friture conforme",
+        "action": ""
+      },
+      {
+        "observation": "TPM huile de friture non conforme",
+        "action": "Changez l'huile immédiatement"
+      },
+      {
+        "observation": "Absence de l'enregistrement des changements d'huile",
+        "action": "Enregistrer les changement d'huile"
+      }
+    ],
+    "3. MAITRISE DES MATIÈRES": [],
+    "Contrôle à réception": [
+      {
+        "observation": "BL pris en photo avec prise de tempéature",
+        "action": "Conforme"
+      },
+      {
+        "observation": "Contrôle à réception sans prise de température",
+        "action": "Le contrôle doit être fait avec un thermomètre infra rouge + photo du BL"
+      },
+      {
+        "observation": "Absence de contrôle à réception",
+        "action": "Ce contrôle est obligatoire et doit être réalisé avec prise de température et photo du BL"
+      }
+    ],
+    "Gestions des conditionnements et emballages": [
+      {
+        "observation": "Absence de cartons et emballages primaires en zone de production. Les aliments sont protégés et datés.",
+        "action": "Conforme"
+      },
+      {
+        "observation": "Présence de cartons et emballages primaires en zone de production",
+        "action": "Eliminez les cartons et emballages primaires en zone de production"
+      },
+      {
+        "observation": "Les aliments ne sont pas protégés, ni datés",
+        "action": "Protégez et datez les aliments"
+      },
+      {
+        "observation": "Présence d'une boîte de conserve dans le timbre froid",
+        "action": "Les boîtes de conserve dans les timbres froids sont interdites, le contenu doit être placé dans un récipient, filmé et daté."
+      },
+      {
+        "observation": "Présence de salissures anciennes sous les palettes",
+        "action": ""
+      },
+      {
+        "observation": "Les aliments ne sont pas datés",
+        "action": "Datez les aliments"
+      },
+      {
+        "observation": "Présence d'aliment(s) à DLC dépassée = 2 250€ d'amendes /aliment concerné.",
+        "action": "Vérifiez les DLC tous les jours."
+      }
+    ],
+    "Affichage (allergènes, origines des viandes…)": [
+      {
+        "observation": "Présence de l'affichage des allergènes et origine des viandes",
+        "action": "Conforme"
+      },
+      {
+        "observation": "Absence de l'affichage des allergènes",
+        "action": "Mettre en place l'affichage des allergènes"
+      },
+      {
+        "observation": "Absence de l'affichage de l'origine des viandes",
+        "action": "Mettre en place l'affichage de l'origine des viandes"
+      }
+    ],
+    "4. TRACABILITE ET GESTION DES NON-CONFORMITES": [],
+    "Système de traçabilité (Réalisation, qualité des photos, traçabilité fonctionnelle…)": [
+      {
+        "observation": "La traçabilité est fonctionnelle",
+        "action": "Conforme"
+      },
+      {
+        "observation": "La traçabilité est réalisée mais n'est pas fonctionnelle",
+        "action": "Attention à la lisibilité des photos"
+      },
+      {
+        "observation": "La traçabilité n'est pas réalisée",
+        "action": "La traçabilité est obligatoire et doit être réalisée et fonctionnelle"
+      }
+    ],
+    "Gestion des non-conformités": [
+      {
+        "observation": "La gestion des non-conformités est réalisée",
+        "action": "Conforme"
+      },
+      {
+        "observation": "La gestion des non-conformités n'est pas réalisée",
+        "action": "La gestion des non-conformités est à réaliser"
+      }
+    ],
+    "Gestion des actions correctives de l'audit précédent": [
+      {
+        "observation": "Des actions correctives de l'audit précédent ont été mises en place",
+        "action": "Conforme"
+      },
+      {
+        "observation": "Des actions correctives de l'audit précédent n'ont pas été mises en place",
+        "action": "Des actions correctives de l'audit précédent doivent être mises en place"
+      }
+    ],
+    "5. GESTION DES DECHETS ET DES SOUS-PRODUITS ANIMAUX": [],
+    "Gestion des déchets": [
+      {
+        "observation": "Les déchets sont régulièrement évacués",
+        "action": "Conforme"
+      },
+      {
+        "observation": "Présence de déchets non évacués",
+        "action": "Evacuez les déchets de la zone de production dès que possible"
+      }
+    ],
+    "Gestions des poubelles": [
+      {
+        "observation": "Présence de poubelles fermées à pédale",
+        "action": "Conforme"
+      },
+      {
+        "observation": "Absence de poubelles fermées à pédale",
+        "action": "Mettre en place des poubelles fermées à pédale"
+      },
+      {
+        "observation": "Poubelle à pédale cassée",
+        "action": "Remplacez ou réparez les poubelles cassées"
+      },
+      {
+        "observation": "Poubelles sales",
+        "action": "Nettoyez les poubelles de zone de production tous les jours"
+      }
+    ],
+    "6. GESTION DU PERSONNEL": [],
+    "Hygiène et équipements du personnel (lave-mains et consommables, sanitaires, vestiaires…)": [
+      {
+        "observation": "Présence de lave-mains propres avec tous les consommables, vestiaires et sanitaires propres.",
+        "action": "Conforme"
+      },
+      {
+        "observation": "Présence de papier jetable sur les plans de travail",
+        "action": "Le papier jetable doit être placé dans son dévidoir."
+      },
+      {
+        "observation": "Absence de savon bactéricide",
+        "action": "Mettre en place du savon bactéricide dans des distributeurs"
+      },
+      {
+        "observation": "Absence de vestiaire pour le personnel ",
+        "action": "Mettre en place des casiers pour le personnel "
+      },
+      {
+        "observation": "Tenue de travail conforme",
+        "action": ""
+      },
+      {
+        "observation": "Tenue de travail non conforme",
+        "action": "Elle doit être composée de vétements propres qui recouvre la tenue personnel et changée tous les jours"
+      }
+    ],
+    "Formation et instructions à disposition du personnel": [
+      {
+        "observation": "Personnel formé et attestations consultables",
+        "action": "Conforme"
+      },
+      {
+        "observation": "Attestation de formation non consultable",
+        "action": "Les attestations de formation doivent être consultables"
+      },
+      {
+        "observation": "Le personnel n'est pas formé",
+        "action": "La formation doit être mise en place au plus vite"
+      },
+      {
+        "observation": "La formation Hygiène a plus de 3 ans.",
+        "action": "La formation Hygiène est à renouvelée rapidement."
+      }
+    ]
+  }
+}
