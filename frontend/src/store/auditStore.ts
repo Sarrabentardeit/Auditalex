@@ -142,7 +142,7 @@ export const useAuditStore = create<AuditState>((set, get) => ({
               return {
                 ...item,
                 numberOfNonConformities,
-                note: note || undefined, // null devient undefined pour compatibilité
+                note: note !== null ? note : undefined, // null devient undefined, mais 0.0 reste 0.0
                 isAudited: numberOfNonConformities !== null, // Audité seulement si pas EN ATTENTE
               };
             }
