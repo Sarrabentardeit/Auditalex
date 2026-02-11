@@ -857,23 +857,23 @@ async function generateAuditDetailPages(pdf: jsPDF, audit: Audit, results: Audit
       // ---- Colonne KO (barre rouge) ----
       pdf.rect(x, yPosition, colWidths.ko, rowHeight);
       
-      // Barre rouge qui remplit TOUTE la colonne si KO (comme dans les images de référence)
-      if (isKO || (rawNote !== null && rawNote !== undefined && rawNote !== 1 && rawNote !== 0.7)) {
+      // Afficher le nombre de KO si item.ko > 0 (peu importe la note)
+      // Vérifier que ko existe et est un nombre > 0
+      const koValue = item.ko !== undefined && item.ko !== null ? item.ko : 0;
+      if (koValue > 0) {
         // Remplir toute la colonne en rouge
         pdf.setFillColor(220, 53, 69);
         pdf.rect(x, yPosition, colWidths.ko, rowHeight, 'F');
         
-        // Afficher "1" en blanc si c'est un vrai KO (item.ko > 0)
-        if (item.ko > 0) {
-          pdf.setFontSize(7);
-          pdf.setFont('helvetica', 'bold');
-          pdf.setTextColor(255, 255, 255);
-          pdf.text('1', x + colWidths.ko / 2, yPosition + rowHeight / 2 + 1, { align: 'center' });
-        }
-      } else {
-        // Si pas de KO, juste la bordure
-        pdf.setDrawColor(0, 0, 0);
-        pdf.rect(x, yPosition, colWidths.ko, rowHeight);
+        // Afficher le nombre de KO en blanc (peut être > 1)
+        pdf.setFontSize(7);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(255, 255, 255);
+        pdf.text(koValue.toString(), x + colWidths.ko / 2, yPosition + rowHeight / 2 + 1, { align: 'center' });
+      } else if (isKO || (rawNote !== null && rawNote !== undefined && rawNote !== 1 && rawNote !== 0.7)) {
+        // Si pas de KO saisi mais note faible, juste la barre rouge sans chiffre
+        pdf.setFillColor(220, 53, 69);
+        pdf.rect(x, yPosition, colWidths.ko, rowHeight, 'F');
       }
       
       // Toujours dessiner la bordure
