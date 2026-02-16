@@ -1,30 +1,7 @@
-# Docker Compose pour PRODUCTION sur VPS
-# Nginx et SSL sont gérés au niveau système
+# Docker Compose pour PRODUCTION avec MongoDB Atlas
 version: '3.8'
 
 services:
-  # MongoDB
-  mongodb:
-    image: mongo:7
-    container_name: audit-mongodb-prod
-    restart: always
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
-      MONGO_INITDB_DATABASE: audit
-    volumes:
-      - mongodb_data_prod:/data/db
-      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-      - ./backups:/backups
-    networks:
-      - audit-network
-    healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/audit --quiet
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    # Pas d'exposition du port 27017 vers l'extérieur (sécurité)
-
   # Backend
   backend:
     build:
@@ -35,15 +12,12 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
-      MONGODB_URI: mongodb://admin:${MONGO_ROOT_PASSWORD}@mongodb:27017/audit?authSource=admin
+      MONGODB_URI: ${MONGODB_URI}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: 7d
       CORS_ORIGIN: https://alexann.nav.ovh
     ports:
-      - "127.0.0.1:3000:3000"  # Backend sur port 3000
-    depends_on:
-      mongodb:
-        condition: service_healthy
+      - "127.0.0.1:3000:3000"
     networks:
       - audit-network
     healthcheck:
@@ -63,7 +37,7 @@ services:
     container_name: audit-frontend-prod
     restart: always
     ports:
-      - "127.0.0.1:3001:80"  # Frontend sur port 3001 ✅
+      - "127.0.0.1:3001:80"
     depends_on:
       - backend
     networks:
@@ -77,7 +51,3 @@ services:
 networks:
   audit-network:
     driver: bridge
-
-volumes:
-  mongodb_data_prod:
-    driver: local
