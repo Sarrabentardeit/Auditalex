@@ -15,7 +15,6 @@ import type { AuditCategory } from '../types';
 import ItemCard from './ItemCard';
 import { useAuditStore } from '../store/auditStore';
 import { useMemo } from 'react';
-import { shallow } from 'zustand/shallow';
 
 interface CategoryCardProps {
   category: AuditCategory;
@@ -23,7 +22,7 @@ interface CategoryCardProps {
 
 function CategoryCard({ category }: CategoryCardProps) {
   // Sélecteur optimisé : ne s'abonne qu'à results, pas à tout le store
-  const results = useAuditStore((state) => state.results, shallow);
+  const results = useAuditStore((state) => state.results);
 
   const categoryScore = useMemo(() => {
     if (!results) return null;

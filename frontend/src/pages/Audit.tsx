@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Typography, Box, Paper, Button, CircularProgress, TextField } from '@mui/material';
 import { useAuditStore } from '../store/auditStore';
-import { shallow } from 'zustand/shallow';
 import CategoryCard from '../components/CategoryCard';
 import Layout from '../components/Layout';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -18,8 +17,8 @@ export default function Audit() {
   const navigate = useNavigate();
   const { id } = useParams<{ id?: string }>();
   // Sélecteurs optimisés pour éviter les re-renders inutiles
-  const currentAudit = useAuditStore((state) => state.currentAudit, shallow);
-  const results = useAuditStore((state) => state.results, shallow);
+  const currentAudit = useAuditStore((state) => state.currentAudit);
+  const results = useAuditStore((state) => state.results);
   const updateAuditDate = useAuditStore((state) => state.updateAuditDate);
   const updateAuditAddress = useAuditStore((state) => state.updateAuditAddress);
   const loadAudit = useAuditStore((state) => state.loadAudit);

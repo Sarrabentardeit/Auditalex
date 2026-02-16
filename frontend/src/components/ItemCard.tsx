@@ -23,7 +23,6 @@ import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import PhotoUpload from './PhotoUpload';
 import PhotoGallery from './PhotoGallery';
 import React, { useMemo, useState, useCallback } from 'react';
-import { shallow } from 'zustand/shallow';
 
 interface ItemCardProps {
   item: AuditItem;
