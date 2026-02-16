@@ -1,0 +1,83 @@
+# Docker Compose pour PRODUCTION sur VPS
+# Nginx et SSL sont gérés au niveau système
+version: '3.8'
+
+services:
+  # MongoDB
+  mongodb:
+    image: mongo:7
+    container_name: audit-mongodb-prod
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: audit
+    volumes:
+      - mongodb_data_prod:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ./backups:/backups
+    networks:
+      - audit-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/audit --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # Pas d'exposition du port 27017 vers l'extérieur (sécurité)
+
+  # Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: audit-backend-prod
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      MONGODB_URI: mongodb://admin:${MONGO_ROOT_PASSWORD}@mongodb:27017/audit?authSource=admin
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: 7d
+      CORS_ORIGIN: https://alexann.nav.ovh
+    ports:
+      - "127.0.0.1:3000:3000"  # Backend sur port 3000
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - audit-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: https://alexann.nav.ovh/api
+    container_name: audit-frontend-prod
+    restart: always
+    ports:
+      - "127.0.0.1:3001:80"  # Frontend sur port 3001 ✅
+    depends_on:
+      - backend
+    networks:
+      - audit-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  audit-network:
+    driver: bridge
+
+volumes:
+  mongodb_data_prod:
+    driver: local
