@@ -4,9 +4,20 @@
       "name": "1. LOCAUX ET EQUIPEMENTS",
       "items": [
         {
+          "name": "Déclaration d'activité",
+          "ponderation": 0.25,
+          "note": 0.25,
+          "comments": [
+            "Déclaration faite"
+          ],
+          "actions": [
+            "Conforme"
+          ]
+        },
+        {
           "name": "Lutte contre les nuisibles",
-          "ponderation": 0.333,
-          "note": 0.333,
+          "ponderation": 0.25,
+          "note": 0.25,
           "comments": [
             "Contrat 3D en place"
           ],
@@ -16,8 +27,8 @@
         },
         {
           "name": "Maintenance des locaux et équipements",
-          "ponderation": 0.333,
-          "note": 0.333,
+          "ponderation": 0.25,
+          "note": 0.25,
           "comments": [
             "Ensemble bien entretenu"
           ],
@@ -27,8 +38,8 @@
         },
         {
           "name": "Nettoyage et désinfection des locaux et équipements",
-          "ponderation": 0.334,
-          "note": 0.334,
+          "ponderation": 0.25,
+          "note": 0.25,
           "comments": [
             "Produits de nettoyage conformes au plan de nettoyage affiché",
             "Enregistrement du nettoyage effectué"
@@ -79,7 +90,7 @@
           "ponderation": 0.333,
           "note": 0.333,
           "comments": [
-            "BL pris en photo avec prise de tempéature"
+            "BL pris en photo avec prise de température"
           ],
           "actions": [
             "Conforme"
@@ -196,7 +207,7 @@
           "note": 0.5,
           "comments": [
             "Personnel formé et attestations présentes",
-            "nombre de KO :"
+            "Nombre de KO :"
           ],
           "actions": [
             "Conforme",
@@ -208,18 +219,48 @@
   ],
   "observations": {
     "1. LOCAUX ET EQUIPEMENTS": [],
+    "Déclaration d'activité": [
+      {
+        "observation": "Déclaration faite",
+        "action": "Conforme"
+      },
+      {
+        "observation": "Déclaration absente",
+        "action": "Faire la déclaration"
+      }
+    ],
     "Lutte contre les nuisibles": [
       {
         "observation": "Contrat 3D en place",
         "action": "Conforme"
       },
       {
-        "observation": "Entrée potentielle de nuisibles",
-        "action": "Toutes les ouvertures doivent être fermées"
+        "observation": "Contrat 3D absent",
+        "action": ""
       },
       {
-        "observation": "Contrat 3D en place",
-        "action": "Mettre en place un contrat"
+        "observation": "Présence de mouches(moucherons)",
+        "action": ""
+      },
+      {
+        "observation": "Présence de cafards",
+        "action": ""
+      },
+        {
+          "observation": "Présence de mites",
+          "action": ""
+        },
+      {
+        "observation": "Présence de déjections",
+        "action": ""
+      },
+      {
+        "observation": "Ouverture aux nuisibles",
+        "action": ""
+      },
+      {
+        "observation": "Entrée potentielle de nuisibles",
+        "action": "Toutes les ouvertures doivent être fermées"
       },
       {
         "observation": "Entrée potentielle de nuisibles",
@@ -231,13 +272,13 @@
         "observation": "Ensemble bien entretenu",
         "action": "Conforme"
       },
-      {
-        "observation": "Joints des timbres froids détériorés",
-        "action": "Changez les joints détériorés"
-      },
+        {
+          "observation": "Joints des chambres froides détériorés",
+          "action": "Changez les joints détériorés"
+        },
       {
         "observation": "Présence de givre excessif",
-        "action": "Dégivrez les installations de froids"
+        "action": "Dégivrez les installations de froid"
       },
       {
         "observation": "Carrelages cassés",
@@ -275,7 +316,7 @@
       },
       {
         "observation": "Produits non conformes",
-        "action": "Procurez vous des produits nettoyants et désinfectants"
+        "action": "Procurez-vous des produits nettoyants et désinfectants"
       },
       {
         "observation": "Plans de nettoyage non affichés",
@@ -364,18 +405,18 @@
       },
       {
         "observation": "Absence de l'enregistrement des changements d'huile",
-        "action": "Enregistrer les changement d'huile"
+        "action": "Enregistrer les changements d'huile"
       }
     ],
     "3. MAITRISE DES MATIÈRES": [],
     "Contrôle à réception": [
       {
-        "observation": "BL pris en photo avec prise de tempéature",
+        "observation": "BL pris en photo avec prise de température",
         "action": "Conforme"
       },
       {
         "observation": "Contrôle à réception sans prise de température",
-        "action": "Le contrôle doit être fait avec un thermomètre infra rouge + photo du BL"
+        "action": "Le contrôle doit être fait avec un thermomètre infrarouge + photo du BL"
       },
       {
         "observation": "Absence de contrôle à réception",
@@ -396,8 +437,8 @@
         "action": "Protégez et datez les aliments"
       },
       {
-        "observation": "Présence d'une boîte de conserve dans le timbre froid",
-        "action": "Les boîtes de conserve dans les timbres froids sont interdites, le contenu doit être placé dans un récipient, filmé et daté."
+        "observation": "Présence d'une boîte de conserve dans la chambre froide",
+        "action": "Les boîtes de conserve dans les chambres froides sont interdites, le contenu doit être placé dans un récipient, filmé et daté."
       },
       {
         "observation": "Présence de salissures anciennes sous les palettes",
@@ -487,7 +528,7 @@
       },
       {
         "observation": "Poubelles sales",
-        "action": "Nettoyez les poubelles de zone de production tous les jours"
+        "action": "Nettoyez les poubelles de la zone de production tous les jours"
       }
     ],
     "6. GESTION DU PERSONNEL": [],
@@ -512,10 +553,10 @@
         "observation": "Tenue de travail conforme",
         "action": ""
       },
-      {
-        "observation": "Tenue de travail non conforme",
-        "action": "Elle doit être composée de vétements propres qui recouvre la tenue personnel et changée tous les jours"
-      }
+        {
+          "observation": "Tenue de travail non conforme",
+          "action": "Elle doit être composée de vêtements propres qui recouvrent la tenue personnelle et changés tous les jours"
+        }
     ],
     "Formation et instructions à disposition du personnel": [
       {
@@ -532,7 +573,7 @@
       },
       {
         "observation": "La formation Hygiène a plus de 3 ans.",
-        "action": "La formation Hygiène est à renouvelée rapidement."
+        "action": "La formation Hygiène est à renouveler rapidement."
       }
     ]
   }

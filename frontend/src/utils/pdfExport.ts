@@ -147,38 +147,115 @@ function formatRawNote(note: number | null | undefined): string {
 }
 
 /**
+ * Charger le logo Alexann' depuis le dossier public
+ */
+async function loadLogo(): Promise<string | null> {
+  try {
+    const response = await fetch('/logo.jpeg');
+    if (!response.ok) {
+      console.warn('Logo non trouvé, utilisation du texte par défaut');
+      return null;
+    }
+    const blob = await response.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result as string;
+        resolve(base64);
+      };
+      reader.onerror = () => {
+        console.warn('Erreur lors de la lecture du logo');
+        resolve(null);
+      };
+      reader.readAsDataURL(blob);
+    });
+  } catch (error) {
+    console.warn('Erreur lors du chargement du logo:', error);
+    return null;
+  }
+}
+
+/**
  * Dessiner l'en-tête commun à toutes les pages
  */
-function drawPageHeader(pdf: jsPDF, title: string, headerMargin: number = 15): number {
+function drawPageHeader(pdf: jsPDF, title: string, logoData: string | null = null, headerMargin: number = 15): number {
   const pageWidth = pdf.internal.pageSize.getWidth();
   const margin = headerMargin;
   let yPosition = margin;
 
   // Logo Alexann à gauche
-  pdf.setFontSize(14);
-  pdf.setFont('helvetica', 'bold');
-  pdf.setTextColor(25, 118, 210);
-  pdf.text('ALEXANN', margin, yPosition);
-  pdf.setFontSize(8);
-  pdf.setFont('helvetica', 'normal');
-  pdf.setTextColor(0, 0, 0);
-  pdf.text('Hygiène et qualité agroalimentaire', margin, yPosition + 5);
+  if (logoData) {
+    try {
+      // Déterminer le format de l'image
+      let imageFormat: 'JPEG' | 'PNG' = 'JPEG';
+      if (logoData.startsWith('data:image/png')) {
+        imageFormat = 'PNG';
+      }
+
+      // Extraire le base64 pur
+      let base64Data = logoData;
+      if (logoData.startsWith('data:image/')) {
+        const base64Index = logoData.indexOf(',');
+        if (base64Index !== -1) {
+          base64Data = logoData.substring(base64Index + 1);
+        }
+      }
+
+      // Dimensions du logo (hauteur max 12mm pour l'en-tête)
+      const logoHeight = 12;
+      const logoWidth = logoHeight * 2; // Ratio approximatif, ajusté automatiquement par jsPDF
+
+      // Ajouter le logo
+      pdf.addImage(base64Data, imageFormat, margin, yPosition - 2, logoWidth, logoHeight);
+      
+      // Tagline sous le logo
+      pdf.setFontSize(7);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(0, 0, 0);
+      pdf.text('Hygiène et qualité agroalimentaire', margin, yPosition + logoHeight + 2);
+      
+      yPosition += logoHeight + 4;
+    } catch (error) {
+      console.warn('Erreur lors de l\'ajout du logo au PDF:', error);
+      // Fallback sur le texte
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(20, 130, 183); // #1482B7
+      pdf.text('ALEXANN', margin, yPosition);
+      pdf.setFontSize(8);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(0, 0, 0);
+      pdf.text('Hygiène et qualité agroalimentaire', margin, yPosition + 5);
+      yPosition += 8;
+    }
+  } else {
+    // Fallback : texte si le logo n'est pas disponible
+    pdf.setFontSize(14);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(20, 130, 183); // #1482B7
+    pdf.text('ALEXANN', margin, yPosition);
+    pdf.setFontSize(8);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(0, 0, 0);
+    pdf.text('Hygiène et qualité agroalimentaire', margin, yPosition + 5);
+    yPosition += 8;
+  }
 
   // Titre au centre
   pdf.setFontSize(11);
   pdf.setFont('helvetica', 'bold');
   pdf.setTextColor(0, 0, 0);
-  pdf.text(title, pageWidth / 2, yPosition + 3, { align: 'center' });
+  pdf.text(title, pageWidth / 2, yPosition, { align: 'center' });
 
   // Contact à droite
   pdf.setFontSize(8);
   pdf.setFont('helvetica', 'normal');
   const contactLines = ['Anne SUQUET', 'anne@alexann.fr', '06 46 45 67 33'];
   contactLines.forEach((line, idx) => {
-    pdf.text(line, pageWidth - margin, yPosition + (idx * 4), { align: 'right' });
+    pdf.text(line, pageWidth - margin, margin + (idx * 4), { align: 'right' });
   });
 
-  return yPosition + 18;
+  return Math.max(yPosition + 10, margin + 18);
 }
 
 /**
@@ -251,12 +328,12 @@ function loadImage(photoData: string): Promise<{ width: number; height: number; 
 // ========================================================================
 // PAGE 1 : CARTOGRAPHIE RADAR
 // ========================================================================
-function generateRadarChartPage(pdf: jsPDF, audit: Audit, results: AuditResults): void {
+function generateRadarChartPage(pdf: jsPDF, audit: Audit, results: AuditResults, logoData: string | null = null): void {
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
   const margin = 15;
 
-  let yPosition = drawPageHeader(pdf, 'CARTOGRAPHIE RADAR\nLES BONNES PRATIQUES D\'HYGIENE');
+  let yPosition = drawPageHeader(pdf, 'CARTOGRAPHIE RADAR\nLES BONNES PRATIQUES D\'HYGIENE', logoData);
 
   yPosition += 5;
 
@@ -438,12 +515,12 @@ function generateRadarChartPage(pdf: jsPDF, audit: Audit, results: AuditResults)
 // ========================================================================
 // PAGE 2 : ACTIONS CORRECTIVES ATTENDUES
 // ========================================================================
-function generateCorrectiveActionsPage(pdf: jsPDF, audit: Audit): void {
+function generateCorrectiveActionsPage(pdf: jsPDF, audit: Audit, logoData: string | null = null): void {
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
   const margin = 15;
 
-  let yPosition = drawPageHeader(pdf, 'CARTOGRAPHIE RADAR\nLES BONNES PRATIQUES D\'HYGIENE');
+  let yPosition = drawPageHeader(pdf, 'ACTIONS CORRECTIVES ATTENDUES', logoData);
 
   yPosition += 10;
 
@@ -455,9 +532,15 @@ function generateCorrectiveActionsPage(pdf: jsPDF, audit: Audit): void {
   yPosition += 12;
 
   // Données des actions correctives
+  // Filtrer les actions correctives : exclure celles avec action "Conforme"
   let correctiveActionsData: CorrectiveActionData[] = [];
   if (audit.correctiveActions && audit.correctiveActions.length > 0) {
-    correctiveActionsData = audit.correctiveActions.filter(ca => ca.ecart && ca.ecart.trim());
+    correctiveActionsData = audit.correctiveActions.filter(ca => {
+      // Exclure les lignes vides et celles avec action corrective "Conforme"
+      if (!ca.ecart || !ca.ecart.trim()) return false;
+      const actionText = (ca.actionCorrective || '').trim();
+      return actionText.toLowerCase() !== 'conforme';
+    });
   }
 
   // Largeurs des colonnes
@@ -481,12 +564,12 @@ function generateCorrectiveActionsPage(pdf: jsPDF, audit: Audit): void {
 
   let currentX = margin;
 
-  // Colonne "Ecarts constatés" (rowspan 2)
+  // Colonne "Écarts constatés" (rowspan 2)
   pdf.rect(currentX, yPosition, colWidths.ecart, headerHeight + subHeaderHeight);
   pdf.setFontSize(8);
   pdf.setFont('helvetica', 'bold');
   pdf.setTextColor(0, 0, 0);
-  pdf.text('Ecarts constatés', currentX + colWidths.ecart / 2, yPosition + (headerHeight + subHeaderHeight) / 2 + 1, { align: 'center' });
+  pdf.text('Écarts constatés', currentX + colWidths.ecart / 2, yPosition + (headerHeight + subHeaderHeight) / 2 + 1, { align: 'center' });
   currentX += colWidths.ecart;
 
   // Colonne "Actions correctives définies par le responsable" (rowspan 2)
@@ -544,7 +627,7 @@ function generateCorrectiveActionsPage(pdf: jsPDF, audit: Audit): void {
     pdf.setFont('helvetica', 'normal');
     pdf.setTextColor(0, 0, 0);
 
-    // Ecarts
+    // Écarts
     pdf.rect(currentX, yPosition, colWidths.ecart, rowHeight);
     if (rowData?.ecart?.trim()) {
       const lines = pdf.splitTextToSize(rowData.ecart.trim(), colWidths.ecart - 4);
@@ -603,7 +686,7 @@ function generateCorrectiveActionsPage(pdf: jsPDF, audit: Audit): void {
  * Générer les pages d'audit détaillées avec le format de référence :
  * [Nom item] | KO | * | Note | Commentaires | Actions correctives | Photo(s)
  */
-async function generateAuditDetailPages(pdf: jsPDF, audit: Audit, results: AuditResults): Promise<void> {
+async function generateAuditDetailPages(pdf: jsPDF, audit: Audit, results: AuditResults, logoData: string | null = null): Promise<void> {
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
   const margin = 10; // Marges réduites pour maximiser l'espace tableau
@@ -626,7 +709,7 @@ async function generateAuditDetailPages(pdf: jsPDF, audit: Audit, results: Audit
 
   // Fonction pour dessiner l'en-tête de page
   const drawAuditPageHeader = (): number => {
-    let y = drawPageHeader(pdf, 'AUDIT\nLES BONNES PRATIQUES D\'HYGIENE', margin);
+    let y = drawPageHeader(pdf, 'AUDIT\nLES BONNES PRATIQUES D\'HYGIENE', logoData, margin);
 
     // Ligne info : Date + Adresse
     pdf.setFontSize(8);
@@ -1098,7 +1181,7 @@ async function generateAuditDetailPages(pdf: jsPDF, audit: Audit, results: Audit
   pdf.setFontSize(7);
   pdf.setFont('helvetica', 'normal');
   pdf.setTextColor(0, 0, 0);
-  const legendText = '* 1 : conforme ; 0,7 : non-conformité mineur ; 0,3 : non-conformité moyenne ; 0 : non-conformité majeur';
+  const legendText = '* 1 : conforme ; 0,7 : non-conformité mineure ; 0,3 : non-conformité moyenne ; 0 : non-conformité majeure';
   const legendLines = pdf.splitTextToSize(legendText, col5W - 4);
   legendLines.forEach((line: string, idx: number) => {
     pdf.text(line, margin + col1W + col2W + col3W + col4W + 2, footerY + 4 + (idx * 3));
@@ -1111,17 +1194,20 @@ async function generateAuditDetailPages(pdf: jsPDF, audit: Audit, results: Audit
 export async function generatePDFReport(audit: Audit, results: AuditResults): Promise<void> {
   console.log('Génération PDF - Audit:', audit);
 
+  // Charger le logo une seule fois au début
+  const logoData = await loadLogo();
+
   const pdf = new jsPDF('p', 'mm', 'a4');
 
   // Page 1 : Cartographie Radar
-  generateRadarChartPage(pdf, audit, results);
+  generateRadarChartPage(pdf, audit, results, logoData);
 
   // Page 2 : Actions Correctives Attendues
   pdf.addPage();
-  generateCorrectiveActionsPage(pdf, audit);
+  generateCorrectiveActionsPage(pdf, audit, logoData);
 
   // Pages suivantes : Audit détaillé par catégorie
-  await generateAuditDetailPages(pdf, audit, results);
+  await generateAuditDetailPages(pdf, audit, results, logoData);
 
   // Numéro de page sur toutes les pages
   const pageWidth = pdf.internal.pageSize.getWidth();
@@ -1136,6 +1222,43 @@ export async function generatePDFReport(audit: Audit, results: AuditResults): Pr
 
   // Télécharger le PDF
   pdf.save(`audit-hygiene-${audit.dateExecution}-${Date.now()}.pdf`);
+}
+
+/**
+ * Générer le PDF et retourner son contenu en base64
+ */
+export async function generatePDFReportAsBase64(audit: Audit, results: AuditResults): Promise<string> {
+  console.log('Génération PDF (base64) - Audit:', audit);
+
+  // Charger le logo une seule fois au début
+  const logoData = await loadLogo();
+
+  const pdf = new jsPDF('p', 'mm', 'a4');
+
+  // Page 1 : Cartographie Radar
+  generateRadarChartPage(pdf, audit, results, logoData);
+
+  // Page 2 : Actions Correctives Attendues
+  pdf.addPage();
+  generateCorrectiveActionsPage(pdf, audit, logoData);
+
+  // Pages suivantes : Audit détaillé par catégorie
+  await generateAuditDetailPages(pdf, audit, results, logoData);
+
+  // Numéro de page sur toutes les pages
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const totalPages = pdf.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    pdf.setPage(i);
+    pdf.setFontSize(8);
+    pdf.setTextColor(128, 128, 128);
+    pdf.text(`${i}/${totalPages}`, pageWidth / 2, pageHeight - 8, { align: 'center' });
+  }
+
+  // Retourner le PDF en base64 (sans le préfixe data:application/pdf;base64,)
+  const pdfBase64 = pdf.output('datauristring').split(',')[1];
+  return pdfBase64;
 }
 
 /**

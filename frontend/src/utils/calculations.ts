@@ -151,7 +151,7 @@ export function calculateResults(audit: Audit): AuditResults {
     totalScore = categoryScoreValues.reduce((a, b) => a + b, 0) / categoryScoreValues.length;
     totalScore = Math.round(totalScore * 100) / 100;
   } else {
-    totalScore = null; // Aucune catégorie auditées
+    totalScore = null; // Aucune catégorie n'a été audité
   }
 
   // Calculer les amendes sur le nombre total de KO (selon formule Excel)

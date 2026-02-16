@@ -23,6 +23,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { generatePDFReport } from '../utils/pdfExport';
 import { CircularProgress } from '@mui/material';
 import type { CorrectiveActionData } from '../types';
+import { useSnackbar } from '../hooks/useSnackbar';
 
 type CorrectiveActionRow = CorrectiveActionData;
 
@@ -64,6 +65,7 @@ export default function ActionsCorrectives() {
   const { currentAudit, results, updateCorrectiveActions } = useAuditStore();
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
+  const { showSuccess, showError, SnackbarComponent } = useSnackbar();
 
   const initialRows = useMemo(() => {
     if (!currentAudit) {
@@ -96,6 +98,13 @@ export default function ActionsCorrectives() {
           
           item.observations.forEach((obs) => {
             if (obs && obs.text && obs.text.trim()) {
+              // Ne pas ajouter les observations avec action corrective "Conforme"
+              const actionText = (obs.correctiveAction || '').trim();
+              if (actionText.toLowerCase() === 'conforme') {
+                console.log(`[ActionsCorrectives] Observation "${obs.text}" ignorée (action corrective: "Conforme")`);
+                return; // Ignorer cette observation
+              }
+              
               const rowId = `${category.id}-${item.id}-${obs.id}`;
               
               // Si la ligne existe déjà (sauvegardée), utiliser les données sauvegardées
@@ -171,20 +180,21 @@ export default function ActionsCorrectives() {
   const handleSave = async () => {
     if (!currentAudit) return;
     await updateCorrectiveActions(rows);
-    alert('Actions correctives enregistrées avec succès');
+    showSuccess('Actions correctives enregistrées avec succès');
   };
 
   const handleExportPDF = async () => {
     if (!currentAudit || !results) {
-      alert('Impossible de générer le PDF : audit ou résultats manquants.');
+      showError('Impossible de générer le PDF : audit ou résultats manquants.');
       return;
     }
     setIsGeneratingPDF(true);
     try {
       await generatePDFReport(currentAudit, results);
+      showSuccess('PDF généré avec succès !');
     } catch (error) {
       console.error('Erreur lors de la génération du PDF:', error);
-      alert(
+      showError(
         `Erreur lors de la génération du PDF: ${error instanceof Error ? error.message : String(error)}`
       );
     } finally {
@@ -226,6 +236,7 @@ export default function ActionsCorrectives() {
 
   return (
     <Layout>
+      {SnackbarComponent}
       <Box>
         {/* Header */}
         <Box sx={{ mb: 3 }}>
@@ -237,7 +248,17 @@ export default function ActionsCorrectives() {
               mb: 2,
             }}
           >
-            <Button startIcon={<ArrowBackIcon />} onClick={() => navigate('/audit')}>
+            <Button 
+              startIcon={<ArrowBackIcon />} 
+              onClick={() => {
+                // Naviguer vers l'audit en cours si disponible, sinon vers le dashboard
+                if (currentAudit?.id) {
+                  navigate(`/audit/${currentAudit.id}`);
+                } else {
+                  navigate('/dashboard');
+                }
+              }}
+            >
               Retour
             </Button>
             <Box sx={{ display: 'flex', gap: 1 }}>
@@ -320,7 +341,7 @@ export default function ActionsCorrectives() {
                     borderRight: '1px solid #000',
                   }}
                 >
-                  Ecarts constatés
+                  Écarts constatés
                 </TableCell>
                 <TableCell
                   rowSpan={2}

@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
@@ -15,14 +16,19 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+const app = (
+  <BrowserRouter>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <App />
+    </ThemeProvider>
+  </BrowserRouter>
+);
+
+// StrictMode uniquement en développement pour éviter les double-renders en production
+const isDevelopment = process.env.NODE_ENV !== 'production';
+
 ReactDOM.createRoot(document.getElementById('app')!).render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <App />
-      </ThemeProvider>
-    </BrowserRouter>
-  </React.StrictMode>
+  isDevelopment ? <React.StrictMode>{app}</React.StrictMode> : app
 );
 

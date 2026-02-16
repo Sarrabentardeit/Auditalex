@@ -11,9 +11,17 @@ class AuditDatabase extends Dexie {
   constructor() {
     super('AuditHygieneDB');
     
-    this.version(1).stores({
-      audits: 'id, dateExecution, synced, createdAt',
+    this.version(2).stores({
+      audits: 'id, auditorId, dateExecution, synced, createdAt',
       syncQueue: 'id, auditId, timestamp',
+    }).upgrade(async (tx) => {
+      // Migration : ajouter auditorId aux audits existants si nécessaire
+      const audits = await tx.table('audits').toArray();
+      for (const audit of audits) {
+        if (!audit.auditorId) {
+          await tx.table('audits').update(audit.id, { auditorId: 'default' });
+        }
+      }
     });
   }
 }

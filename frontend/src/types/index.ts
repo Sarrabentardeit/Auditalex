@@ -96,10 +96,15 @@ export interface CorrectiveActionData {
 
 export interface Audit {
   id: string;
+  auditorId: string; // ID de l'auditeur qui a créé cet audit
+  auditorName?: string; // Nom de l'auditeur (optionnel, pour l'affichage admin)
+  auditorEmail?: string; // Email de l'auditeur (optionnel, pour l'affichage admin)
   dateExecution: string; // Format: YYYY-MM-DD
   adresse: string;
   categories: AuditCategory[];
   correctiveActions?: CorrectiveActionData[]; // Actions correctives remplissables
+  status?: 'draft' | 'in_progress' | 'completed' | 'archived'; // État de l'audit
+  completedAt?: string; // Date de complétion
   createdAt: string;
   updatedAt: string;
   synced: boolean; // Si synchronisé avec le serveur
@@ -109,7 +114,7 @@ export interface Audit {
  * Résultats calculés d'un audit
  */
 export interface AuditResults {
-  totalScore: number | null; // Score total en pourcentage (null si pas encore calculé ou aucune catégorie auditées)
+  totalScore: number | null; // Score total en pourcentage (null si pas encore calculé ou aucune catégorie n'a été audité)
   numberOfKO: number; // Nombre de KO (somme des KO manuels)
   potentialFines: number; // Amendes potentielles en euros
   categoryScores: Record<string, number | null>; // Score par catégorie (null si non auditées)
@@ -135,6 +140,25 @@ export interface CorrectiveAction {
   deadline: string; // Délai
   completionDate?: string; // Date de réalisation
   status: 'pending' | 'completed' | 'verified';
+}
+
+/**
+ * Rôle utilisateur
+ */
+export type UserRole = 'admin' | 'auditor';
+
+/**
+ * Utilisateur (Admin ou Auditeur)
+ */
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  password: string; // Hash du mot de passe (en production, utiliser un hash sécurisé)
+  isActive: boolean; // Si le compte est actif
+  createdAt: string;
+  updatedAt: string;
 }
 
 

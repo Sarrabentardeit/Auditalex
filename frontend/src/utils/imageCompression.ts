@@ -54,3 +54,5 @@ export async function compressAndConvertToBase64(file: File): Promise<string> {
 }
 
 
+
+

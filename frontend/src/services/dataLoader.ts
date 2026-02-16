@@ -2,6 +2,7 @@ import type { AuditCategory, AuditItem, Observation, ItemClassification } from '
 
 // Mapping des items avec leur classification selon le document PDF
 const ITEM_CLASSIFICATIONS: Record<string, ItemClassification> = {
+  'Déclaration d\'activité': 'binary',
   'Lutte contre les nuisibles': 'binary',
   'Maintenance des locaux et équipements': 'multiple',
   'Nettoyage et désinfection des locaux et équipements': 'multiple',
@@ -36,10 +37,21 @@ interface JSONData {
   observations: Record<string, Array<{ observation: string; action: string }>>;
 }
 
-// Charger les données depuis le fichier public
+// Cache pour éviter de recharger le JSON à chaque fois
+let cachedData: JSONData | null = null;
+
+// Charger les données depuis le fichier public avec mise en cache
 async function loadJSONData(): Promise<JSONData> {
+  if (cachedData !== null) {
+    console.log('[DataLoader] Utilisation du cache pour data_structure.json');
+    return cachedData;
+  }
+  
+  console.log('[DataLoader] Chargement de data_structure.json depuis le serveur...');
   const response = await fetch('/data_structure.json');
-  return await response.json();
+  const data: JSONData = await response.json();
+  cachedData = data;
+  return data;
 }
 
 /**

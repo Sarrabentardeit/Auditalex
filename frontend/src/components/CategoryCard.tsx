@@ -1,3 +1,4 @@
+import React from 'react';
 import { 
   Card, 
   CardContent, 
@@ -14,13 +15,15 @@ import type { AuditCategory } from '../types';
 import ItemCard from './ItemCard';
 import { useAuditStore } from '../store/auditStore';
 import { useMemo } from 'react';
+import { shallow } from 'zustand/shallow';
 
 interface CategoryCardProps {
   category: AuditCategory;
 }
 
-export default function CategoryCard({ category }: CategoryCardProps) {
-  const { results } = useAuditStore();
+function CategoryCard({ category }: CategoryCardProps) {
+  // Sélecteur optimisé : ne s'abonne qu'à results, pas à tout le store
+  const results = useAuditStore((state) => state.results, shallow);
 
   const categoryScore = useMemo(() => {
     if (!results) return null;
@@ -108,3 +111,6 @@ export default function CategoryCard({ category }: CategoryCardProps) {
     </Card>
   );
 }
+
+// Mémoriser le composant pour éviter les re-renders inutiles
+export default React.memo(CategoryCard);

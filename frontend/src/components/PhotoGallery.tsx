@@ -27,9 +27,9 @@ export default function PhotoGallery({ photos, onDelete }: PhotoGalleryProps) {
 
   const handleDelete = (index: number, event: React.MouseEvent) => {
     event.stopPropagation();
-    if (window.confirm('Voulez-vous vraiment supprimer cette photo ?')) {
-      onDelete(index);
-    }
+    // Note: Pour PhotoGallery, on utilise directement onDelete car c'est un composant enfant
+    // La confirmation peut être gérée au niveau parent si nécessaire
+    onDelete(index);
   };
 
   return (

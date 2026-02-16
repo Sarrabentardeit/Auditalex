@@ -4,9 +4,20 @@
       "name": "1. LOCAUX ET EQUIPEMENTS",
       "items": [
         {
+          "name": "Déclaration d'activité",
+          "ponderation": 0.25,
+          "note": 0.25,
+          "comments": [
+            "Déclaration faite"
+          ],
+          "actions": [
+            "Conforme"
+          ]
+        },
+        {
           "name": "Lutte contre les nuisibles",
-          "ponderation": 0.333,
-          "note": 0.333,
+          "ponderation": 0.25,
+          "note": 0.25,
           "comments": [
             "Contrat 3D en place"
           ],
@@ -16,8 +27,8 @@
         },
         {
           "name": "Maintenance des locaux et équipements",
-          "ponderation": 0.333,
-          "note": 0.333,
+          "ponderation": 0.25,
+          "note": 0.25,
           "comments": [
             "Ensemble bien entretenu"
           ],
@@ -27,8 +38,8 @@
         },
         {
           "name": "Nettoyage et désinfection des locaux et équipements",
-          "ponderation": 0.334,
-          "note": 0.334,
+          "ponderation": 0.25,
+          "note": 0.25,
           "comments": [
             "Produits de nettoyage conformes au plan de nettoyage affiché",
             "Enregistrement du nettoyage effectué"
@@ -208,10 +219,44 @@
   ],
   "observations": {
     "1. LOCAUX ET EQUIPEMENTS": [],
+    "Déclaration d'activité": [
+      {
+        "observation": "Déclaration faite",
+        "action": "Conforme"
+      },
+      {
+        "observation": "Déclaration absente",
+        "action": "Faire la déclaration"
+      }
+    ],
     "Lutte contre les nuisibles": [
       {
         "observation": "Contrat 3D en place",
         "action": "Conforme"
+      },
+      {
+        "observation": "Contrat 3D absent",
+        "action": ""
+      },
+      {
+        "observation": "Présence de mouches(moucherons)",
+        "action": ""
+      },
+      {
+        "observation": "Présence de cafards",
+        "action": ""
+      },
+      {
+        "observation": "Présence de mytes",
+        "action": ""
+      },
+      {
+        "observation": "Présence de déjections",
+        "action": ""
+      },
+      {
+        "observation": "Ouverture aux nuisibles",
+        "action": ""
       },
       {
         "observation": "Entrée potentielle de nuisibles",

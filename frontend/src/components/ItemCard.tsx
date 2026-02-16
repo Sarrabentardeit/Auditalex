@@ -22,7 +22,8 @@ import { useAuditStore } from '../store/auditStore';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import PhotoUpload from './PhotoUpload';
 import PhotoGallery from './PhotoGallery';
-import { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
+import { shallow } from 'zustand/shallow';
 
 interface ItemCardProps {
   item: AuditItem;
@@ -30,31 +31,33 @@ interface ItemCardProps {
   categoryItems: AuditItem[]; // Tous les items de la catégorie (conservé pour compatibilité)
 }
 
-export default function ItemCard({ item, categoryId, categoryItems: _categoryItems }: ItemCardProps) {
-  const { 
-    updateItemNonConformities, 
-    updateItemKO, 
-    addObservation,
-    removeObservation,
-    updateObservationAction,
-    addPhoto, 
-    removePhoto 
-  } = useAuditStore();
+function ItemCard({ item, categoryId, categoryItems: _categoryItems }: ItemCardProps) {
+  // Sélecteurs optimisés : ne s'abonnent qu'aux actions nécessaires, pas à tout le store
+  const updateItemNonConformities = useAuditStore((state) => state.updateItemNonConformities);
+  const updateItemKO = useAuditStore((state) => state.updateItemKO);
+  const addObservation = useAuditStore((state) => state.addObservation);
+  const removeObservation = useAuditStore((state) => state.removeObservation);
+  const updateObservationAction = useAuditStore((state) => state.updateObservationAction);
+  const addPhoto = useAuditStore((state) => state.addPhoto);
+  const removePhoto = useAuditStore((state) => state.removePhoto);
 
   const [selectedObservationText, setSelectedObservationText] = useState<string>('');
   const [selectedActionForNewObservation, setSelectedActionForNewObservation] = useState<string>('');
   const [customObservationText, setCustomObservationText] = useState<string>('');
   const [showCustomObservationField, setShowCustomObservationField] = useState(false);
+  const [customActionText, setCustomActionText] = useState<string>('');
+  const [showCustomActionField, setShowCustomActionField] = useState<{ [key: string]: boolean }>({});
 
-  const handleNonConformitiesChange = async (numberOfNonConformities: number | null) => {
+  // Mémoriser les handlers pour éviter les re-renders
+  const handleNonConformitiesChange = useCallback(async (numberOfNonConformities: number | null) => {
     await updateItemNonConformities(categoryId, item.id, numberOfNonConformities);
-  };
+  }, [categoryId, item.id, updateItemNonConformities]);
 
-  const handleKOChange = async (ko: number) => {
+  const handleKOChange = useCallback(async (ko: number) => {
     await updateItemKO(categoryId, item.id, ko);
-  };
+  }, [categoryId, item.id, updateItemKO]);
 
-  const handleAddObservation = async () => {
+  const handleAddObservation = useCallback(async () => {
     if (selectedObservationText && selectedObservationText !== '__CUSTOM__') {
       await addObservation(categoryId, item.id, selectedObservationText, selectedActionForNewObservation || undefined);
       setSelectedObservationText(''); // Réinitialiser la sélection
@@ -64,15 +67,28 @@ export default function ItemCard({ item, categoryId, categoryItems: _categoryIte
       setCustomObservationText('');
       setShowCustomObservationField(false);
     }
-  };
+  }, [categoryId, item.id, selectedObservationText, selectedActionForNewObservation, customObservationText, addObservation]);
 
-  const handleRemoveObservation = async (observationId: string) => {
+  const handleRemoveObservation = useCallback(async (observationId: string) => {
     await removeObservation(categoryId, item.id, observationId);
-  };
+  }, [categoryId, item.id, removeObservation]);
 
-  const handleUpdateObservationAction = async (observationId: string, action: string) => {
+  const handleUpdateObservationAction = useCallback(async (observationId: string, action: string) => {
+    // Si l'action est "__CUSTOM__", afficher le champ texte personnalisé
+    if (action === '__CUSTOM__') {
+      setShowCustomActionField(prev => ({ ...prev, [observationId]: true }));
+      return;
+    }
     await updateObservationAction(categoryId, item.id, observationId, action);
-  };
+  }, [categoryId, item.id, updateObservationAction]);
+
+  const handleSaveCustomAction = useCallback(async (observationId: string, customAction: string) => {
+    if (customAction.trim()) {
+      await updateObservationAction(categoryId, item.id, observationId, customAction.trim());
+      setShowCustomActionField(prev => ({ ...prev, [observationId]: false }));
+      setCustomActionText('');
+    }
+  }, [categoryId, item.id, updateObservationAction]);
 
   const getNoteColor = (note?: number) => {
     if (note === undefined) return 'default';
@@ -225,23 +241,68 @@ export default function ItemCard({ item, categoryId, categoryItems: _categoryIte
               />
               {/* Action corrective pour le commentaire personnalisé */}
               {item.availableCorrectiveActions.length > 0 && (
-                <FormControl fullWidth size="small">
-                  <InputLabel>Action corrective (optionnelle)</InputLabel>
-                  <Select
-                    value={selectedActionForNewObservation}
-                    onChange={(e) => setSelectedActionForNewObservation(e.target.value)}
-                    label="Action corrective (optionnelle)"
-                  >
-                    <MenuItem value="">
-                      <em>Aucune action</em>
-                    </MenuItem>
-                    {availableActions.map((action) => (
-                      <MenuItem key={action} value={action}>
-                        {action}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <>
+                  {showCustomActionField['__NEW__'] ? (
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        value={customActionText}
+                        onChange={(e) => setCustomActionText(e.target.value)}
+                        placeholder="Saisissez votre action corrective personnalisée..."
+                        variant="outlined"
+                        autoFocus
+                      />
+                      <Button
+                        variant="contained"
+                        onClick={() => {
+                          setSelectedActionForNewObservation(customActionText.trim());
+                          setShowCustomActionField(prev => ({ ...prev, '__NEW__': false }));
+                          setCustomActionText('');
+                        }}
+                        disabled={!customActionText.trim()}
+                      >
+                        OK
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        onClick={() => {
+                          setShowCustomActionField(prev => ({ ...prev, '__NEW__': false }));
+                          setCustomActionText('');
+                        }}
+                      >
+                        Annuler
+                      </Button>
+                    </Box>
+                  ) : (
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Action corrective (optionnelle)</InputLabel>
+                      <Select
+                        value={selectedActionForNewObservation}
+                        onChange={(e) => {
+                          if (e.target.value === '__CUSTOM__') {
+                            setShowCustomActionField(prev => ({ ...prev, '__NEW__': true }));
+                          } else {
+                            setSelectedActionForNewObservation(e.target.value);
+                          }
+                        }}
+                        label="Action corrective (optionnelle)"
+                      >
+                        <MenuItem value="">
+                          <em>Aucune action</em>
+                        </MenuItem>
+                        {availableActions.map((action) => (
+                          <MenuItem key={action} value={action}>
+                            {action}
+                          </MenuItem>
+                        ))}
+                        <MenuItem value="__CUSTOM__" sx={{ fontStyle: 'italic', color: 'primary.main' }}>
+                          + Ajouter une action corrective personnalisée...
+                        </MenuItem>
+                      </Select>
+                    </FormControl>
+                  )}
+                </>
               )}
               <Box sx={{ display: 'flex', gap: 1 }}>
                 <Button
@@ -296,23 +357,68 @@ export default function ItemCard({ item, categoryId, categoryItems: _categoryIte
                   
                   {/* Action corrective pour le nouveau commentaire */}
                   {selectedObservationText && selectedObservationText !== '__CUSTOM__' && item.availableCorrectiveActions.length > 0 && (
-                    <FormControl fullWidth size="small">
-                      <InputLabel>Action corrective (optionnelle)</InputLabel>
-                      <Select
-                        value={selectedActionForNewObservation}
-                        onChange={(e) => setSelectedActionForNewObservation(e.target.value)}
-                        label="Action corrective (optionnelle)"
-                      >
-                        <MenuItem value="">
-                          <em>Aucune action</em>
-                        </MenuItem>
-                        {availableActions.map((action) => (
-                          <MenuItem key={action} value={action}>
-                            {action}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
+                    <>
+                      {showCustomActionField['__NEW_OBS__'] ? (
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                          <TextField
+                            fullWidth
+                            size="small"
+                            value={customActionText}
+                            onChange={(e) => setCustomActionText(e.target.value)}
+                            placeholder="Saisissez votre action corrective personnalisée..."
+                            variant="outlined"
+                            autoFocus
+                          />
+                          <Button
+                            variant="contained"
+                            onClick={() => {
+                              setSelectedActionForNewObservation(customActionText.trim());
+                              setShowCustomActionField(prev => ({ ...prev, '__NEW_OBS__': false }));
+                              setCustomActionText('');
+                            }}
+                            disabled={!customActionText.trim()}
+                          >
+                            OK
+                          </Button>
+                          <Button
+                            variant="outlined"
+                            onClick={() => {
+                              setShowCustomActionField(prev => ({ ...prev, '__NEW_OBS__': false }));
+                              setCustomActionText('');
+                            }}
+                          >
+                            Annuler
+                          </Button>
+                        </Box>
+                      ) : (
+                        <FormControl fullWidth size="small">
+                          <InputLabel>Action corrective (optionnelle)</InputLabel>
+                          <Select
+                            value={selectedActionForNewObservation}
+                            onChange={(e) => {
+                              if (e.target.value === '__CUSTOM__') {
+                                setShowCustomActionField(prev => ({ ...prev, '__NEW_OBS__': true }));
+                              } else {
+                                setSelectedActionForNewObservation(e.target.value);
+                              }
+                            }}
+                            label="Action corrective (optionnelle)"
+                          >
+                            <MenuItem value="">
+                              <em>Aucune action</em>
+                            </MenuItem>
+                            {availableActions.map((action) => (
+                              <MenuItem key={action} value={action}>
+                                {action}
+                              </MenuItem>
+                            ))}
+                            <MenuItem value="__CUSTOM__" sx={{ fontStyle: 'italic', color: 'primary.main' }}>
+                              + Ajouter une action corrective personnalisée...
+                            </MenuItem>
+                          </Select>
+                        </FormControl>
+                      )}
+                    </>
                   )}
                   
                   <Button
@@ -362,23 +468,58 @@ export default function ItemCard({ item, categoryId, categoryItems: _categoryIte
                 
                 {/* Action corrective liée à ce commentaire */}
                 {item.availableCorrectiveActions.length > 0 && (
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Action corrective</InputLabel>
-                    <Select
-                      value={obs.correctiveAction || ''}
-                      onChange={(e) => handleUpdateObservationAction(obs.id, e.target.value)}
-                      label="Action corrective"
-                    >
-                      <MenuItem value="">
-                        <em>Aucune action</em>
-                      </MenuItem>
-                      {availableActions.map((action) => (
-                        <MenuItem key={action} value={action}>
-                          {action}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+                  <>
+                    {showCustomActionField[obs.id] ? (
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        <TextField
+                          fullWidth
+                          size="small"
+                          value={customActionText}
+                          onChange={(e) => setCustomActionText(e.target.value)}
+                          placeholder="Saisissez votre action corrective personnalisée..."
+                          variant="outlined"
+                          autoFocus
+                        />
+                        <Button
+                          variant="contained"
+                          onClick={() => handleSaveCustomAction(obs.id, customActionText)}
+                          disabled={!customActionText.trim()}
+                        >
+                          OK
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          onClick={() => {
+                            setShowCustomActionField(prev => ({ ...prev, [obs.id]: false }));
+                            setCustomActionText('');
+                          }}
+                        >
+                          Annuler
+                        </Button>
+                      </Box>
+                    ) : (
+                      <FormControl fullWidth size="small">
+                        <InputLabel>Action corrective</InputLabel>
+                        <Select
+                          value={obs.correctiveAction || ''}
+                          onChange={(e) => handleUpdateObservationAction(obs.id, e.target.value)}
+                          label="Action corrective"
+                        >
+                          <MenuItem value="">
+                            <em>Aucune action</em>
+                          </MenuItem>
+                          {availableActions.map((action) => (
+                            <MenuItem key={action} value={action}>
+                              {action}
+                            </MenuItem>
+                          ))}
+                          <MenuItem value="__CUSTOM__" sx={{ fontStyle: 'italic', color: 'primary.main' }}>
+                            + Ajouter une action corrective personnalisée...
+                          </MenuItem>
+                        </Select>
+                      </FormControl>
+                    )}
+                  </>
                 )}
               </Box>
             ))}
@@ -405,3 +546,6 @@ export default function ItemCard({ item, categoryId, categoryItems: _categoryIte
     </Box>
   );
 }
+
+// Mémoriser le composant pour éviter les re-renders inutiles
+export default React.memo(ItemCard);

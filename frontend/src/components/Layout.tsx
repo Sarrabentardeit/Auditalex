@@ -18,7 +18,6 @@ import {
 import { useNavigate, useLocation } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 import HomeIcon from '@mui/icons-material/Home';
-import AssessmentIcon from '@mui/icons-material/Assessment';
 import { useState } from 'react';
 
 interface LayoutProps {
@@ -34,7 +33,6 @@ export default function Layout({ children }: LayoutProps) {
 
   const menuItems = [
     { text: 'Accueil', icon: <HomeIcon />, path: '/' },
-    { text: 'Audit', icon: <AssessmentIcon />, path: '/audit' },
   ];
 
   const handleNavigation = (path: string) => {
@@ -46,8 +44,8 @@ export default function Layout({ children }: LayoutProps) {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      {/* AppBar Simple */}
-      <AppBar position="sticky">
+      {/* AppBar avec Logo Alexann' */}
+      <AppBar position="sticky" sx={{ backgroundColor: '#1482B7' }}>
         <Toolbar>
           {isMobile && (
             <IconButton
@@ -60,18 +58,66 @@ export default function Layout({ children }: LayoutProps) {
             </IconButton>
           )}
 
-          <Typography
-            variant="h6"
-            component="div"
-            sx={{ flexGrow: 1, cursor: 'pointer' }}
+          {/* Logo Alexann' */}
+          <Box
             onClick={() => navigate('/')}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              cursor: 'pointer',
+              mr: 2,
+              flexGrow: 1,
+            }}
           >
-            Audit d'Hygiène
-          </Typography>
+            <Box
+              component="img"
+              src="/logo.jpeg"
+              alt="Alexann'"
+              className="logo-image"
+              sx={{
+                height: { xs: 40, md: 50 },
+                objectFit: 'contain',
+                display: 'block',
+              }}
+              onError={(e) => {
+                // Si le logo ne charge pas, cacher l'image et afficher le texte
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                // Afficher le texte de fallback
+                const parent = target.parentElement;
+                if (parent) {
+                  const fallback = parent.querySelector('.logo-fallback') as HTMLElement;
+                  if (fallback) {
+                    fallback.style.display = 'flex';
+                  }
+                }
+              }}
+            />
+            <Typography
+              variant="h6"
+              component="div"
+              className="logo-fallback"
+              sx={{
+                fontFamily: "'Bebas Neue', sans-serif",
+                fontSize: { xs: '1.1rem', md: '1.25rem' },
+                color: '#ffffff',
+                display: 'none', // Caché par défaut, affiché seulement si le logo ne charge pas
+                alignItems: 'center',
+                gap: 1,
+              }}
+            >
+              <Box component="span" sx={{ color: '#1482B7' }}>
+                Alex
+              </Box>
+              <Box component="span" sx={{ color: '#8CB33A' }}>
+                ann'
+              </Box>
+            </Typography>
+          </Box>
 
           {/* Desktop Navigation */}
           {!isMobile && (
-            <Box sx={{ display: 'flex', gap: 2 }}>
+            <Box sx={{ display: 'flex', gap: 3, alignItems: 'center' }}>
               {menuItems.map((item) => (
                 <Typography
                   key={item.path}
@@ -79,8 +125,15 @@ export default function Layout({ children }: LayoutProps) {
                   onClick={() => handleNavigation(item.path)}
                   sx={{
                     cursor: 'pointer',
+                    fontFamily: 'Montserrat, sans-serif',
                     fontWeight: location.pathname === item.path ? 600 : 400,
-                    textDecoration: location.pathname === item.path ? 'underline' : 'none',
+                    color: '#ffffff',
+                    borderBottom: location.pathname === item.path ? '2px solid #8CB33A' : '2px solid transparent',
+                    pb: 0.5,
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      borderBottom: '2px solid #8CB33A',
+                    },
                   }}
                 >
                   {item.text}
@@ -121,19 +174,34 @@ export default function Layout({ children }: LayoutProps) {
         </Container>
       </Box>
 
-      {/* Footer Simple */}
+      {/* Footer avec charte graphique */}
       <Box
         component="footer"
         sx={{
-          py: 2,
+          py: 3,
           px: 2,
           mt: 'auto',
-          bgcolor: 'grey.100',
+          bgcolor: '#f5f5f5',
           textAlign: 'center',
+          borderTop: '1px solid #e0e0e0',
         }}
       >
-        <Typography variant="body2" color="text.secondary">
-          © 2025 Alexann' - Hygiène et qualité agroalimentaire
+        <Typography
+          variant="body2"
+          sx={{
+            fontFamily: 'Montserrat, sans-serif',
+            color: '#666666',
+            fontSize: '0.875rem',
+          }}
+        >
+          © 2025{' '}
+          <Box component="span" sx={{ color: '#1482B7', fontWeight: 600 }}>
+            Alex
+          </Box>
+          <Box component="span" sx={{ color: '#8CB33A', fontWeight: 600 }}>
+            ann'
+          </Box>
+          {' '}- Hygiène et qualité agroalimentaire
         </Typography>
       </Box>
     </Box>
