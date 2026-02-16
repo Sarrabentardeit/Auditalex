@@ -26,7 +26,8 @@ const app = (
 );
 
 // StrictMode uniquement en développement pour éviter les double-renders en production
-const isDevelopment = process.env.NODE_ENV !== 'production';
+// En production, import.meta.env.PROD = true, en dev = false
+const isDevelopment = !import.meta.env.PROD;
 
 ReactDOM.createRoot(document.getElementById('app')!).render(
   isDevelopment ? <React.StrictMode>{app}</React.StrictMode> : app
