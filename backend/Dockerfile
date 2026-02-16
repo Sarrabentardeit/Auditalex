@@ -1,4 +1,4 @@
-# Backend Dockerfile
+# Backend Dockerfile - Multi-stage build
 FROM node:20-alpine AS builder
 
 # Créer le répertoire de travail
@@ -7,8 +7,8 @@ WORKDIR /app
 # Copier les fichiers package
 COPY package*.json ./
 
-# Installer les dépendances
-RUN npm ci --only=production
+# Installer TOUTES les dépendances (y compris devDependencies pour le build)
+RUN npm ci
 
 # Copier le code source
 COPY . .
@@ -21,10 +21,12 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copier les dépendances depuis builder
-COPY --from=builder /app/node_modules ./node_modules
+# Copier seulement les dépendances de production
+COPY package*.json ./
+RUN npm ci --only=production
+
+# Copier le code compilé depuis le builder
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/package*.json ./
 
 # Créer un utilisateur non-root pour la sécurité
 RUN addgroup -g 1001 -S nodejs && \
