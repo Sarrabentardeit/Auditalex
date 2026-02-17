@@ -74,7 +74,7 @@ export default function Login() {
   };
 
   return (
-    <Container maxWidth="sm">
+    <Container maxWidth="sm" sx={{ px: { xs: 1, sm: 2 } }}>
       <Box
         sx={{
           minHeight: '100vh',
@@ -86,10 +86,11 @@ export default function Login() {
         <Paper
           elevation={3}
           sx={{
-            p: 4,
+            p: { xs: 2, sm: 4 },
             width: '100%',
             maxWidth: 400,
             borderRadius: 3,
+            mx: { xs: 1, sm: 0 },
           }}
         >
           {/* Logo Alexann' */}
@@ -122,9 +123,10 @@ export default function Login() {
             gutterBottom 
             align="center" 
             sx={{ 
-              mb: 3,
+              mb: 2,
               fontFamily: "'Bebas Neue', sans-serif",
               color: '#1482B7',
+              fontSize: { xs: '1.5rem', sm: '2.125rem' },
             }}
           >
             Connexion

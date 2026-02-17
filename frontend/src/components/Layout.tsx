@@ -169,7 +169,7 @@ export default function Layout({ children }: LayoutProps) {
 
       {/* Main Content */}
       <Box component="main" sx={{ flexGrow: 1 }}>
-        <Container maxWidth="lg" sx={{ py: 3 }}>
+        <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 3 }, px: { xs: 2, sm: 3 } }}>
           {children}
         </Container>
       </Box>
@@ -178,8 +178,8 @@ export default function Layout({ children }: LayoutProps) {
       <Box
         component="footer"
         sx={{
-          py: 3,
-          px: 2,
+          py: { xs: 2, sm: 3 },
+          px: { xs: 2, sm: 3 },
           mt: 'auto',
           bgcolor: '#f5f5f5',
           textAlign: 'center',
@@ -191,7 +191,7 @@ export default function Layout({ children }: LayoutProps) {
           sx={{
             fontFamily: 'Montserrat, sans-serif',
             color: '#666666',
-            fontSize: '0.875rem',
+            fontSize: { xs: '0.75rem', sm: '0.875rem' },
           }}
         >
           © 2025{' '}

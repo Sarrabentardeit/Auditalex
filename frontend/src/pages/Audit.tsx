@@ -181,14 +181,22 @@ export default function Audit() {
       <Box>
         {/* Header */}
         <Box sx={{ mb: 3 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: { xs: 'column', sm: 'row' }, 
+            justifyContent: 'space-between', 
+            alignItems: { xs: 'stretch', sm: 'flex-start' },
+            gap: 2,
+            mb: 2 
+          }}>
             <Button
               startIcon={<ArrowBackIcon />}
               onClick={() => navigate('/dashboard')}
+              sx={{ alignSelf: { xs: 'flex-start', sm: 'center' } }}
             >
               Retour
             </Button>
-            <Box sx={{ display: 'flex', gap: 1 }}>
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
               {displayResults && (
                 <Button
                   variant="outlined"
@@ -196,6 +204,8 @@ export default function Audit() {
                   startIcon={isGeneratingPDF ? <CircularProgress size={16} color="inherit" /> : <PictureAsPdfIcon />}
                   onClick={handleExportPDF}
                   disabled={isGeneratingPDF}
+                  size="small"
+                  sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
                 >
                   {isGeneratingPDF ? 'Génération...' : 'Exporter en PDF'}
                 </Button>
@@ -203,6 +213,7 @@ export default function Audit() {
               <Button
                 variant="outlined"
                 color="success"
+                size="small"
                 onClick={async () => {
                   try {
                     // Marquer l'audit comme terminé (sauvegarde bloquante)
@@ -222,6 +233,7 @@ export default function Audit() {
               <Button
                 variant="contained"
                 color="primary"
+                size="small"
                 endIcon={<ArrowForwardIcon />}
                 onClick={() => navigate('/actions-correctives')}
               >
@@ -229,10 +241,10 @@ export default function Audit() {
               </Button>
             </Box>
           </Box>
-          <Typography variant="h4" component="h1" gutterBottom>
+          <Typography variant="h4" component="h1" gutterBottom sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}>
             Audit d'Hygiène
           </Typography>
-          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mt: 2, alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, mt: 2, alignItems: 'stretch' }}>
             <TextField
               label="Date de l'exécution"
               type="date"
@@ -250,7 +262,7 @@ export default function Audit() {
               InputLabelProps={{
                 shrink: true,
               }}
-              sx={{ minWidth: 200 }}
+              sx={{ minWidth: { xs: '100%', sm: 200 } }}
               size="small"
               disabled={!currentAudit?.id || loading}
             />
@@ -268,7 +280,7 @@ export default function Audit() {
                 }
               }}
               placeholder="Saisissez l'adresse"
-              sx={{ minWidth: 300, flex: 1 }}
+              sx={{ minWidth: { xs: '100%', sm: 200 }, flex: { xs: 'none', sm: 1 } }}
               size="small"
               disabled={!currentAudit?.id || loading}
             />

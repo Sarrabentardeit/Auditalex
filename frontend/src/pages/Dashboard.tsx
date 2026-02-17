@@ -126,8 +126,15 @@ export default function Dashboard() {
       {ConfirmDialogComponent}
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
         {/* Header élégant avec séparateur */}
-        <Box sx={{ mb: 5 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 4 }}>
+        <Box sx={{ mb: { xs: 3, md: 5 } }}>
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: { xs: 'column', sm: 'row' }, 
+            justifyContent: 'space-between', 
+            alignItems: { xs: 'stretch', sm: 'flex-start' }, 
+            gap: 2,
+            mb: { xs: 3, md: 4 } 
+          }}>
             <Box>
               <Typography
                 variant="h4"
@@ -137,7 +144,7 @@ export default function Dashboard() {
                   mb: 0.5,
                   color: 'text.primary',
                   letterSpacing: '-0.03em',
-                  fontSize: { xs: '1.75rem', md: '2rem' },
+                  fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' },
                 }}
               >
                 Tableau de bord
@@ -145,12 +152,18 @@ export default function Dashboard() {
               <Typography
                 variant="body1"
                 color="text.secondary"
-                sx={{ mt: 1, fontSize: '0.95rem' }}
+                sx={{ mt: 1, fontSize: { xs: '0.875rem', sm: '0.95rem' } }}
               >
                 Bienvenue, <strong>{currentUser.name}</strong>
               </Typography>
             </Box>
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            <Box sx={{ 
+              display: 'flex', 
+              gap: 1, 
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              justifyContent: { xs: 'flex-start', sm: 'flex-end' }
+            }}>
               {isAdmin() && (
                 <Button
                   variant="outlined"
@@ -159,13 +172,10 @@ export default function Dashboard() {
                   sx={{
                     textTransform: 'none',
                     borderRadius: 2,
-                    px: 2.5,
+                    px: { xs: 1.5, sm: 2.5 },
                     py: 1,
-                    borderWidth: 1.5,
+                    fontSize: { xs: '0.8rem', sm: '0.875rem' },
                     fontWeight: 500,
-                    '&:hover': {
-                      borderWidth: 1.5,
-                    },
                   }}
                 >
                   Administration
@@ -179,15 +189,15 @@ export default function Dashboard() {
                   fontWeight: 600,
                   height: 32,
                   '& .MuiChip-label': {
-                    px: 2,
+                    px: { xs: 1.5, sm: 2 },
                   },
                 }}
               />
               <IconButton
                 onClick={handleLogout}
                 color="error"
+                size="medium"
                 sx={{
-                  ml: 0.5,
                   '&:hover': {
                     bgcolor: alpha('#f44336', 0.08),
                   },
@@ -400,16 +410,18 @@ export default function Dashboard() {
           </Stack>
 
         {/* Actions */}
-        <Box sx={{ mb: 5, display: 'flex', justifyContent: 'center' }}>
+        <Box sx={{ mb: { xs: 3, md: 5 }, display: 'flex', justifyContent: 'center' }}>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={handleCreateAudit}
             size="large"
+            fullWidth
             sx={{
-              px: 5,
+              maxWidth: 400,
+              px: { xs: 3, sm: 5 },
               py: 1.75,
-              fontSize: '0.95rem',
+              fontSize: { xs: '0.85rem', sm: '0.95rem' },
               fontWeight: 600,
               borderRadius: 3,
               textTransform: 'none',

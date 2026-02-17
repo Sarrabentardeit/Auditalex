@@ -185,16 +185,23 @@ export default function Admin() {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 4 }, px: { xs: 2, sm: 3 } }}>
       {SnackbarComponent}
       {ConfirmDialogComponent}
       {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+      <Box sx={{ 
+        display: 'flex', 
+        flexDirection: { xs: 'column', sm: 'row' }, 
+        justifyContent: 'space-between', 
+        alignItems: { xs: 'stretch', sm: 'center' },
+        gap: 2,
+        mb: 4 
+      }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <IconButton onClick={() => navigate('/dashboard')}>
+          <IconButton onClick={() => navigate('/dashboard')} sx={{ minWidth: 44, minHeight: 44 }}>
             <ArrowBackIcon />
           </IconButton>
-          <Typography variant="h4" component="h1">
+          <Typography variant="h4" component="h1" sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}>
             Gestion des utilisateurs
           </Typography>
         </Box>
@@ -202,14 +209,15 @@ export default function Admin() {
           variant="contained"
           startIcon={<AddIcon />}
           onClick={() => handleOpenDialog()}
+          sx={{ alignSelf: { xs: 'stretch', sm: 'center' } }}
         >
           Créer un utilisateur
         </Button>
       </Box>
 
       {/* Liste des utilisateurs */}
-      <TableContainer component={Paper}>
-        <Table>
+      <TableContainer component={Paper} sx={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        <Table sx={{ minWidth: { xs: 500, sm: undefined } }}>
           <TableHead>
             <TableRow>
               <TableCell>Nom</TableCell>

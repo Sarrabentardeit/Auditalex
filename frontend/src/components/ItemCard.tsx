@@ -22,7 +22,7 @@ import { useAuditStore } from '../store/auditStore';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import PhotoUpload from './PhotoUpload';
 import PhotoGallery from './PhotoGallery';
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useRef } from 'react';
 
 interface ItemCardProps {
   item: AuditItem;
@@ -46,6 +46,14 @@ function ItemCard({ item, categoryId, categoryItems: _categoryItems }: ItemCardP
   const [showCustomObservationField, setShowCustomObservationField] = useState(false);
   const [customActionText, setCustomActionText] = useState<string>('');
   const [showCustomActionField, setShowCustomActionField] = useState<{ [key: string]: boolean }>({});
+  const itemCardRef = useRef<HTMLDivElement>(null);
+
+  // Garder l'item visible après ajout de commentaire ou photo (éviter oublis)
+  const scrollItemIntoView = useCallback(() => {
+    requestAnimationFrame(() => {
+      itemCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }, []);
 
   // Mémoriser les handlers pour éviter les re-renders
   const handleNonConformitiesChange = useCallback(async (numberOfNonConformities: number | null) => {
@@ -61,12 +69,14 @@ function ItemCard({ item, categoryId, categoryItems: _categoryItems }: ItemCardP
       await addObservation(categoryId, item.id, selectedObservationText, selectedActionForNewObservation || undefined);
       setSelectedObservationText(''); // Réinitialiser la sélection
       setSelectedActionForNewObservation(''); // Réinitialiser l'action
+      scrollItemIntoView(); // Rester positionné sur l'item pour éviter les oublis
     } else if (customObservationText.trim()) {
       await addObservation(categoryId, item.id, customObservationText.trim());
       setCustomObservationText('');
       setShowCustomObservationField(false);
+      scrollItemIntoView(); // Rester positionné sur l'item pour éviter les oublis
     }
-  }, [categoryId, item.id, selectedObservationText, selectedActionForNewObservation, customObservationText, addObservation]);
+  }, [categoryId, item.id, selectedObservationText, selectedActionForNewObservation, customObservationText, addObservation, scrollItemIntoView]);
 
   const handleRemoveObservation = useCallback(async (observationId: string) => {
     await removeObservation(categoryId, item.id, observationId);
@@ -112,8 +122,13 @@ function ItemCard({ item, categoryId, categoryItems: _categoryItems }: ItemCardP
     return item.availableCorrectiveActions;
   }, [item.availableCorrectiveActions]);
 
+  const handlePhotoAdded = useCallback(async (photoBase64: string) => {
+    await addPhoto(categoryId, item.id, photoBase64);
+    scrollItemIntoView(); // Rester positionné sur l'item après photo (important sur mobile)
+  }, [categoryId, item.id, addPhoto, scrollItemIntoView]);
+
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <Box ref={itemCardRef} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       {/* Info Section - Afficher seulement la note finale (résultat) */}
       {item.note !== undefined && (
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
@@ -131,7 +146,14 @@ function ItemCard({ item, categoryId, categoryItems: _categoryItems }: ItemCardP
           État de l'item :
         </Typography>
         {item.classification === 'binary' ? (
-          <ButtonGroup variant="outlined" fullWidth>
+          <ButtonGroup 
+            variant="outlined" 
+            fullWidth 
+            sx={{ 
+              flexDirection: { xs: 'column', sm: 'row' },
+              '& .MuiButton-root': { minHeight: 44 }
+            }}
+          >
             <Button
               variant={item.numberOfNonConformities === 0 ? 'contained' : 'outlined'}
               onClick={() => handleNonConformitiesChange(0)}
@@ -148,7 +170,15 @@ function ItemCard({ item, categoryId, categoryItems: _categoryItems }: ItemCardP
             </Button>
           </ButtonGroup>
         ) : (
-          <ButtonGroup variant="outlined" fullWidth>
+          <ButtonGroup 
+            variant="outlined" 
+            fullWidth 
+            sx={{ 
+              flexDirection: { xs: 'column', sm: 'row' },
+              flexWrap: 'wrap',
+              '& .MuiButton-root': { minHeight: 44 }
+            }}
+          >
             <Button
               variant={item.numberOfNonConformities === 0 ? 'contained' : 'outlined'}
               onClick={() => handleNonConformitiesChange(0)}
@@ -531,7 +561,7 @@ function ItemCard({ item, categoryId, categoryItems: _categoryItems }: ItemCardP
       {/* Photos */}
       <Box>
         <PhotoUpload
-          onPhotoAdded={(photoBase64) => addPhoto(categoryId, item.id, photoBase64)}
+          onPhotoAdded={handlePhotoAdded}
         />
         {item.photos.length > 0 && (
           <Box sx={{ mt: 2 }}>

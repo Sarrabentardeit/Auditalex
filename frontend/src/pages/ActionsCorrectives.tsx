@@ -243,8 +243,10 @@ export default function ActionsCorrectives() {
           <Box
             sx={{
               display: 'flex',
+              flexDirection: { xs: 'column', sm: 'row' },
               justifyContent: 'space-between',
-              alignItems: 'flex-start',
+              alignItems: { xs: 'stretch', sm: 'flex-start' },
+              gap: 2,
               mb: 2,
             }}
           >
@@ -261,7 +263,7 @@ export default function ActionsCorrectives() {
             >
               Retour
             </Button>
-            <Box sx={{ display: 'flex', gap: 1 }}>
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
               <Button
                 variant="outlined"
                 startIcon={<AddIcon />}
@@ -314,8 +316,11 @@ export default function ActionsCorrectives() {
           sx={{
             border: '1px solid #000',
             borderRadius: 0,
+            overflowX: 'auto',
+            WebkitOverflowScrolling: 'touch',
             '& .MuiTable-root': {
               borderCollapse: 'collapse',
+              minWidth: 700,
             },
           }}
         >
