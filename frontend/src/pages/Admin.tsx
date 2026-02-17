@@ -275,7 +275,13 @@ export default function Admin() {
       </TableContainer>
 
       {/* Dialog de création/édition */}
-      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+      <Dialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { m: { xs: 1, sm: 2 } } }}
+      >
         <DialogTitle>
           {editingUser ? 'Modifier l\'utilisateur' : 'Créer un utilisateur'}
         </DialogTitle>

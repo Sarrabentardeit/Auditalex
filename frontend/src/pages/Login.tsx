@@ -106,7 +106,7 @@ export default function Login() {
               src="/logo.jpeg"
               alt="Alexann'"
               sx={{
-                height: 60,
+                height: { xs: 50, sm: 60 },
                 objectFit: 'contain',
                 display: 'block',
               }}

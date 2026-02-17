@@ -9,6 +9,8 @@ import {
   DialogContent,
   DialogTitle,
   Typography,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
@@ -20,6 +22,8 @@ interface PhotoGalleryProps {
 
 export default function PhotoGallery({ photos, onDelete }: PhotoGalleryProps) {
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   if (photos.length === 0) {
     return null;
@@ -38,7 +42,11 @@ export default function PhotoGallery({ photos, onDelete }: PhotoGalleryProps) {
         Photos ({photos.length})
       </Typography>
       
-      <ImageList cols={3} gap={8} sx={{ mb: 2 }}>
+      <ImageList
+        cols={isMobile ? 2 : 3}
+        gap={8}
+        sx={{ mb: 2 }}
+      >
         {photos.map((photo, index) => (
           <ImageListItem
             key={index}
@@ -82,6 +90,7 @@ export default function PhotoGallery({ photos, onDelete }: PhotoGalleryProps) {
         onClose={() => setSelectedPhoto(null)}
         maxWidth="md"
         fullWidth
+        PaperProps={{ sx: { m: { xs: 1, sm: 2 }, maxHeight: { xs: '95vh', sm: '90vh' } } }}
       >
         <DialogTitle>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

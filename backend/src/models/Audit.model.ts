@@ -33,5 +33,9 @@ const AuditSchema = new Schema<IAudit>(
   }
 );
 
+// Index pour accélérer la liste des audits (tri par date)
+AuditSchema.index({ createdAt: -1 });
+AuditSchema.index({ auditorId: 1, createdAt: -1 });
+
 export const Audit = mongoose.model<IAudit>('Audit', AuditSchema);
 

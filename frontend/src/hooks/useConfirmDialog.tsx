@@ -67,7 +67,9 @@ export function useConfirmDialog() {
       PaperProps={{
         sx: {
           borderRadius: 2,
-          minWidth: 400,
+          minWidth: { xs: '90vw', sm: 400 },
+          maxWidth: { xs: '95vw', sm: 500 },
+          mx: { xs: 1, sm: 2 },
         },
       }}
     >

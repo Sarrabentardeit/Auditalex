@@ -26,8 +26,8 @@ export default function Home() {
 
   return (
     <Layout>
-      <Box sx={{ textAlign: 'center', mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
+      <Box sx={{ textAlign: 'center', mb: { xs: 3, sm: 4 } }}>
+        <Typography variant="h4" component="h1" gutterBottom sx={{ fontSize: { xs: '1.5rem', sm: '2.125rem' } }}>
           Audit d'Hygiène
         </Typography>
         <Typography variant="body1" color="text.secondary">

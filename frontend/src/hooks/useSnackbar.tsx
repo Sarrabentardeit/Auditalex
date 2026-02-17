@@ -35,6 +35,7 @@ export function useSnackbar() {
       autoHideDuration={6000}
       onClose={hideSnackbar}
       anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      sx={{ maxWidth: { xs: 'calc(100vw - 32px)', sm: '100%' } }}
     >
       <Alert
         onClose={hideSnackbar}

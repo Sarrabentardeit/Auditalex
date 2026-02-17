@@ -11,6 +11,7 @@ export default function OfflineIndicator() {
         open={wasOffline && isOnline}
         autoHideDuration={4000}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        sx={{ maxWidth: { xs: 'calc(100vw - 32px)', sm: '100%' } }}
       >
         <Alert severity="success" sx={{ width: '100%' }}>
           Connexion rétablie
@@ -21,6 +22,7 @@ export default function OfflineIndicator() {
       <Snackbar
         open={!isOnline}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        sx={{ maxWidth: { xs: 'calc(100vw - 32px)', sm: '100%' } }}
       >
         <Alert severity="warning" sx={{ width: '100%' }}>
           Mode hors ligne - Les données sont sauvegardées localement

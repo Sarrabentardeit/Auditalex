@@ -9,12 +9,12 @@ import {
   Stack,
   Chip,
   IconButton,
-  CircularProgress,
   Alert,
   alpha,
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Skeleton,
 } from '@mui/material';
 import { useAuthStore } from '../store/authStore';
 import { useAuditStore } from '../store/auditStore';
@@ -223,23 +223,40 @@ export default function Dashboard() {
         </Alert>
       )}
 
-      {/* Loading state */}
+      {/* Loading state - Skeleton pour meilleure perception de la vitesse */}
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-          <CircularProgress />
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
+            {[1, 2, 3].map((i) => (
+              <Paper key={i} elevation={0} sx={{ p: 3.5, flex: 1, border: '1px solid', borderColor: 'divider', borderRadius: 3 }}>
+                <Skeleton variant="text" width={40} height={50} sx={{ mb: 1 }} />
+                <Skeleton variant="text" width="70%" height={24} />
+              </Paper>
+            ))}
+          </Stack>
+          <Skeleton variant="rounded" height={48} sx={{ maxWidth: 400, mx: 'auto' }} />
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Paper key={i} elevation={0} sx={{ p: 3, flex: '1 1 280px', maxWidth: 400, border: '1px solid', borderColor: 'divider', borderRadius: 3 }}>
+                <Skeleton variant="text" width="60%" height={28} sx={{ mb: 2 }} />
+                <Skeleton variant="text" width="100%" height={24} sx={{ mb: 1 }} />
+                <Skeleton variant="text" width="80%" height={20} />
+              </Paper>
+            ))}
+          </Box>
         </Box>
       ) : (
         <>
           {/* Statistiques - Design premium */}
           <Stack 
             direction={{ xs: 'column', sm: 'row' }} 
-            spacing={3} 
-            sx={{ mb: 5 }}
+            spacing={{ xs: 2, sm: 3 }} 
+            sx={{ mb: { xs: 3, sm: 5 } }}
           >
               <Paper
                 elevation={0}
                 sx={{
-                  p: 3.5,
+                  p: { xs: 2.5, sm: 3.5 },
                   border: '1px solid',
                   borderColor: alpha('#1482B7', 0.2),
                   borderRadius: 3,
@@ -269,7 +286,7 @@ export default function Dashboard() {
                       variant="h3"
                       fontWeight={700}
                       color="primary.main"
-                      sx={{ mb: 0.5, lineHeight: 1.2 }}
+                      sx={{ mb: 0.5, lineHeight: 1.2, fontSize: { xs: '2rem', sm: '3rem' } }}
                     >
                       {totalAudits}
                     </Typography>
@@ -296,7 +313,7 @@ export default function Dashboard() {
             <Paper
                 elevation={0}
                 sx={{
-                  p: 3.5,
+                  p: { xs: 2.5, sm: 3.5 },
                   border: '1px solid',
                   borderColor: alpha('#8CB33A', 0.2),
                   borderRadius: 3,
@@ -326,7 +343,7 @@ export default function Dashboard() {
                       variant="h3"
                       fontWeight={700}
                       color="success.main"
-                      sx={{ mb: 0.5, lineHeight: 1.2 }}
+                      sx={{ mb: 0.5, lineHeight: 1.2, fontSize: { xs: '2rem', sm: '3rem' } }}
                     >
                       {completedAudits}
                     </Typography>
@@ -353,7 +370,7 @@ export default function Dashboard() {
             <Paper
                 elevation={0}
                 sx={{
-                  p: 3.5,
+                  p: { xs: 2.5, sm: 3.5 },
                   border: '1px solid',
                   borderColor: alpha('#ed6c02', 0.2),
                   borderRadius: 3,
@@ -383,7 +400,7 @@ export default function Dashboard() {
                       variant="h3"
                       fontWeight={700}
                       color="warning.main"
-                      sx={{ mb: 0.5, lineHeight: 1.2 }}
+                      sx={{ mb: 0.5, lineHeight: 1.2, fontSize: { xs: '2rem', sm: '3rem' } }}
                     >
                       {inProgressAudits}
                     </Typography>
@@ -440,11 +457,18 @@ export default function Dashboard() {
         </Box>
 
         {/* Liste des audits */}
-        <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box sx={{ 
+          mb: 3, 
+          display: 'flex', 
+          flexDirection: { xs: 'column', sm: 'row' }, 
+          alignItems: { xs: 'flex-start', sm: 'center' }, 
+          justifyContent: 'space-between',
+          gap: 0.5 
+        }}>
           <Typography
             variant="h6"
             fontWeight={700}
-            sx={{ color: 'text.primary', letterSpacing: '-0.01em' }}
+            sx={{ color: 'text.primary', letterSpacing: '-0.01em', fontSize: { xs: '1rem', sm: '1.25rem' } }}
           >
             Mes audits {isAdmin() && '(Tous les audits)'}
           </Typography>
@@ -457,7 +481,7 @@ export default function Dashboard() {
           <Paper
             elevation={0}
             sx={{
-              p: 8,
+              p: { xs: 4, sm: 8 },
               textAlign: 'center',
               border: '2px dashed',
               borderColor: alpha('#1482B7', 0.2),
@@ -604,31 +628,47 @@ export default function Dashboard() {
                           },
                         }}
                       >
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
-                          <Box
-                            sx={{
-                              width: 40,
-                              height: 40,
-                              borderRadius: 1.5,
-                              bgcolor: alpha('#1482B7', 0.1),
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                            }}
-                          >
-                            <PersonIcon sx={{ fontSize: 20, color: 'primary.main' }} />
-                          </Box>
-                          <Box sx={{ flex: 1 }}>
-                            <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 0.5 }}>
-                              {group.name}
-                            </Typography>
-                            {group.email && (
-                              <Typography variant="caption" color="text.secondary">
-                                {group.email}
+                        <Box sx={{ 
+                          display: 'flex', 
+                          flexDirection: { xs: 'column', sm: 'row' }, 
+                          alignItems: { xs: 'flex-start', sm: 'center' }, 
+                          gap: { xs: 1.5, sm: 2 }, 
+                          width: '100%',
+                          minWidth: 0,
+                        }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, minWidth: 0, flex: { xs: 'none', sm: 1 } }}>
+                            <Box
+                              sx={{
+                                width: 40,
+                                height: 40,
+                                flexShrink: 0,
+                                borderRadius: 1.5,
+                                bgcolor: alpha('#1482B7', 0.1),
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                            >
+                              <PersonIcon sx={{ fontSize: 20, color: 'primary.main' }} />
+                            </Box>
+                            <Box sx={{ minWidth: 0, flex: 1 }}>
+                              <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 0.5, wordBreak: 'break-word' }} title={group.name}>
+                                {group.name}
                               </Typography>
-                            )}
+                              {group.email && (
+                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={group.email}>
+                                  {group.email}
+                                </Typography>
+                              )}
+                            </Box>
                           </Box>
-                          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mr: 2 }}>
+                          <Box sx={{ 
+                            display: 'flex', 
+                            gap: 1, 
+                            alignItems: 'center', 
+                            flexWrap: 'wrap',
+                            alignSelf: { xs: 'stretch', sm: 'center' },
+                          }}>
                             <Chip
                               label={`${completedCount} complété${completedCount > 1 ? 's' : ''}`}
                               color="success"
@@ -658,7 +698,7 @@ export default function Dashboard() {
                                   elevation={0}
                                   sx={{
                                     height: '100%',
-                                    p: 3,
+                                    p: { xs: 2, sm: 3 },
                                     border: '1px solid',
                                     borderColor: alpha('#000', 0.08),
                                     borderRadius: 3,
@@ -767,7 +807,7 @@ export default function Dashboard() {
                       elevation={0}
                       sx={{
                         height: '100%',
-                        p: 3,
+                        p: { xs: 2, sm: 3 },
                         border: '1px solid',
                         borderColor: alpha('#000', 0.08),
                         borderRadius: 3,

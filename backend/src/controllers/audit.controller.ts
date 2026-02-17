@@ -13,22 +13,27 @@ export async function getAllAudits(
     const userId = req.user!.id;
     const role = req.user!.role;
 
+    // Optimisation : exclure categories et correctiveActions pour la liste (peuvent être très lourds avec photos base64)
+    const listFields = 'dateExecution adresse status completedAt createdAt updatedAt auditorId synced';
+
     let audits;
 
     if (role === 'admin') {
-      // Admin can see all audits with auditor info
       audits = await Audit.find()
+        .select(listFields)
         .populate('auditorId', 'name email')
-        .sort({ createdAt: -1 });
+        .sort({ createdAt: -1 })
+        .lean();
     } else {
-      // Auditeurs : leurs audits avec infos auditeur
       audits = await Audit.find({ auditorId: userId })
+        .select(listFields)
         .populate('auditorId', 'name email')
-        .sort({ createdAt: -1 });
+        .sort({ createdAt: -1 })
+        .lean();
     }
 
     res.json({
-      audits: audits.map((audit) => {
+      audits: audits.map((audit: any) => {
         // Si auditorId est populé, c'est un objet avec _id, name, email
         // Sinon, c'est juste l'ObjectId
         const auditorIdValue = typeof audit.auditorId === 'object' && audit.auditorId !== null
@@ -50,8 +55,8 @@ export async function getAllAudits(
           auditorEmail,
           dateExecution: audit.dateExecution,
           adresse: audit.adresse,
-          categories: audit.categories,
-          correctiveActions: audit.correctiveActions,
+          categories: [], // Chargé à la demande via getAuditById
+          correctiveActions: [],
           status: audit.status,
           completedAt: audit.completedAt,
           createdAt: audit.createdAt,
