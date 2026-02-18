@@ -150,20 +150,21 @@ function ItemCard({ item, categoryId, categoryItems: _categoryItems }: ItemCardP
             variant="outlined" 
             fullWidth 
             sx={{ 
-              flexDirection: { xs: 'column', sm: 'row' },
+              flexDirection: 'row',
+              flexWrap: 'wrap',
               '& .MuiButton-root': { minHeight: 44 }
             }}
           >
             <Button
               variant={item.numberOfNonConformities === 0 ? 'contained' : 'outlined'}
-              onClick={() => handleNonConformitiesChange(0)}
+              onClick={() => handleNonConformitiesChange(item.numberOfNonConformities === 0 ? null : 0)}
               color="success"
             >
               Conforme (1)
             </Button>
             <Button
               variant={item.numberOfNonConformities === 1 ? 'contained' : 'outlined'}
-              onClick={() => handleNonConformitiesChange(1)}
+              onClick={() => handleNonConformitiesChange(item.numberOfNonConformities === 1 ? null : 1)}
               color="error"
             >
               Non-conforme (0)
@@ -174,35 +175,35 @@ function ItemCard({ item, categoryId, categoryItems: _categoryItems }: ItemCardP
             variant="outlined" 
             fullWidth 
             sx={{ 
-              flexDirection: { xs: 'column', sm: 'row' },
+              flexDirection: 'row',
               flexWrap: 'wrap',
               '& .MuiButton-root': { minHeight: 44 }
             }}
           >
             <Button
               variant={item.numberOfNonConformities === 0 ? 'contained' : 'outlined'}
-              onClick={() => handleNonConformitiesChange(0)}
+              onClick={() => handleNonConformitiesChange(item.numberOfNonConformities === 0 ? null : 0)}
               color="success"
             >
               Conforme (1)
             </Button>
             <Button
               variant={item.numberOfNonConformities === 1 ? 'contained' : 'outlined'}
-              onClick={() => handleNonConformitiesChange(1)}
+              onClick={() => handleNonConformitiesChange(item.numberOfNonConformities === 1 ? null : 1)}
               color="info"
             >
               Mineur (0,7)
             </Button>
             <Button
               variant={item.numberOfNonConformities === 2 ? 'contained' : 'outlined'}
-              onClick={() => handleNonConformitiesChange(2)}
+              onClick={() => handleNonConformitiesChange(item.numberOfNonConformities === 2 ? null : 2)}
               color="warning"
             >
               Moyen (0,3)
             </Button>
             <Button
               variant={item.numberOfNonConformities !== null && item.numberOfNonConformities >= 3 ? 'contained' : 'outlined'}
-              onClick={() => handleNonConformitiesChange(3)}
+              onClick={() => handleNonConformitiesChange(item.numberOfNonConformities !== null && item.numberOfNonConformities >= 3 ? null : 3)}
               color="error"
             >
               Majeur (0)

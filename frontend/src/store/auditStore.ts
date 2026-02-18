@@ -323,9 +323,34 @@ export const useAuditStore = create<AuditState>((set, get) => ({
     }
 
     try {
+      // Mode hors ligne : créer directement en local (éviter l'attente du timeout réseau)
+      const isOffline = typeof navigator !== 'undefined' && !navigator.onLine;
+      if (isOffline) {
+        logger.log('[AuditStore] 📴 Mode hors ligne détecté, création locale...');
+        const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const newAudit: Audit = {
+          id: tempId,
+          auditorId: currentUser.id,
+          auditorName: currentUser.name,
+          auditorEmail: currentUser.email,
+          dateExecution,
+          adresse,
+          categories,
+          status: 'in_progress',
+          completedAt: undefined,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          synced: false,
+        };
+        saveAuditToLocal(newAudit);
+        logger.log('[AuditStore] ✅ Audit créé localement (hors ligne). ID temporaire:', tempId);
+        set({ currentAudit: newAudit });
+        getDebouncedCalculateResults(get, set)();
+        return;
+      }
+
       logger.log('[AuditStore] 🆕 Création d\'un nouvel audit dans le backend...');
       
-      // Créer l'audit directement dans le backend avec status 'in_progress'
       const auditData = {
         dateExecution,
         adresse: adresse || undefined,

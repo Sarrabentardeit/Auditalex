@@ -27,11 +27,14 @@ function CategoryCard({ category }: CategoryCardProps) {
   const categoryScore = useMemo(() => {
     if (!results) return null;
     const score = results.categoryScores[category.id];
-    // Le score peut être null si tous les items sont EN ATTENTE
     return score !== undefined ? score : null;
   }, [results, category.id]);
 
-  // Vérifier si au moins un item de cette catégorie a été audité
+  const categoryCounts = useMemo(() => {
+    if (!results?.categoryAuditedCounts) return null;
+    return results.categoryAuditedCounts[category.id];
+  }, [results, category.id]);
+
   const hasAuditedItems = useMemo(() => {
     return category.items.some(item => item.isAudited);
   }, [category.items]);
@@ -56,7 +59,11 @@ function CategoryCard({ category }: CategoryCardProps) {
             </Typography>
           </Box>
           <Chip
-            label={categoryScore !== null ? `${categoryScore.toFixed(0)}%` : '— %'}
+            label={
+              categoryCounts
+                ? `${categoryCounts.audited}/${categoryCounts.total} · ${categoryScore !== null ? `${categoryScore.toFixed(0)}%` : '— %'}`
+                : (categoryScore !== null ? `${categoryScore.toFixed(0)}%` : '— %')
+            }
             color={categoryScore !== null ? (getScoreColor(categoryScore) as any) : 'default'}
             variant={categoryScore === null ? 'outlined' : 'filled'}
           />

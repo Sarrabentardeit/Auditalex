@@ -124,14 +124,29 @@ export function calculateResults(audit: Audit): AuditResults {
     });
   });
 
+  // Calculer les compteurs (audited/total) pour chaque catégorie et global
+  const categoryAuditedCounts: Record<string, { audited: number; total: number }> = {};
+  let totalAudited = 0;
+  let totalItems = 0;
+  audit.categories.forEach((category) => {
+    const audited = category.items.filter(item => item.isAudited).length;
+    const total = category.items.length;
+    categoryAuditedCounts[category.id] = { audited, total };
+    totalAudited += audited;
+    totalItems += total;
+  });
+
   // Si aucun item n'a été audité, retourner des résultats par défaut
   if (!hasAuditedItems) {
     return {
-      totalScore: null, // Non calculé
+      totalScore: null,
       numberOfKO: 0,
       potentialFines: 0,
       categoryScores: {},
       hasAuditedItems: false,
+      auditedCount: totalAudited,
+      totalCount: totalItems,
+      categoryAuditedCounts,
     };
   }
 
@@ -164,5 +179,8 @@ export function calculateResults(audit: Audit): AuditResults {
     potentialFines: totalFines,
     categoryScores,
     hasAuditedItems: true,
+    auditedCount: totalAudited,
+    totalCount: totalItems,
+    categoryAuditedCounts,
   };
 }

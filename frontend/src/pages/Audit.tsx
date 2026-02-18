@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Typography, Box, Paper, Button, CircularProgress, TextField } from '@mui/material';
+import { Typography, Box, Paper, Button, CircularProgress, TextField, Tooltip } from '@mui/material';
 import { useAuditStore } from '../store/auditStore';
 import CategoryCard from '../components/CategoryCard';
 import Layout from '../components/Layout';
@@ -61,6 +61,14 @@ export default function Audit() {
 
   // Utiliser les résultats du store en priorité (ils sont déjà debounced)
   const displayResults = results || memoizedResults;
+
+  // Tous les items doivent être contrôlés pour pouvoir terminer l'audit
+  const allItemsControlled = useMemo(() => {
+    if (!currentAudit) return false;
+    return currentAudit.categories.every(cat =>
+      cat.items.every(item => item.isAudited)
+    );
+  }, [currentAudit?.categories]);
 
   // Charger l'audit si un ID est fourni, sinon créer un nouvel audit
   // IMPORTANT: Utiliser useRef pour éviter les créations multiples
@@ -210,26 +218,30 @@ export default function Audit() {
                   {isGeneratingPDF ? 'Génération...' : 'Exporter en PDF'}
                 </Button>
               )}
-              <Button
-                variant="outlined"
-                color="success"
-                size="small"
-                onClick={async () => {
-                  try {
-                    // Marquer l'audit comme terminé (sauvegarde bloquante)
-                    await markAuditAsCompleted();
-                    // Attendre un peu pour que la sauvegarde soit bien synchronisée
-                    await new Promise(resolve => setTimeout(resolve, 300));
-                    // Naviguer vers le dashboard (qui rechargera automatiquement les audits)
-                    navigate('/dashboard');
-                  } catch (error) {
-                    logger.error('Erreur lors de la finalisation de l\'audit:', error);
-                    showError('Erreur lors de la finalisation de l\'audit. Veuillez réessayer.');
-                  }
-                }}
+              <Tooltip
+                title={!allItemsControlled ? "Tous les items doivent être contrôlés avant de terminer l'audit" : ''}
               >
-                Terminer
-              </Button>
+                <span>
+                  <Button
+                    variant="outlined"
+                    color="success"
+                    size="small"
+                    disabled={!allItemsControlled}
+                    onClick={async () => {
+                      try {
+                        await markAuditAsCompleted();
+                        await new Promise(resolve => setTimeout(resolve, 300));
+                        navigate('/dashboard');
+                      } catch (error) {
+                        logger.error('Erreur lors de la finalisation de l\'audit:', error);
+                        showError('Erreur lors de la finalisation de l\'audit. Veuillez réessayer.');
+                      }
+                    }}
+                  >
+                    Terminer
+                  </Button>
+                </span>
+              </Tooltip>
               <Button
                 variant="contained"
                 color="primary"
@@ -326,6 +338,9 @@ export default function Audit() {
                 Score Total
               </Typography>
               <Typography variant="h4" fontWeight="bold" color={displayResults.totalScore !== null ? 'primary' : 'text.secondary'}>
+                {displayResults.auditedCount !== undefined && displayResults.totalCount !== undefined
+                  ? `${displayResults.auditedCount}/${displayResults.totalCount} · `
+                  : ''}
                 {displayResults.totalScore !== null ? `${displayResults.totalScore.toFixed(1)}%` : '— %'}
               </Typography>
             </Paper>

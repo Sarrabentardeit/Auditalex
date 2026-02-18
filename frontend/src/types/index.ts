@@ -119,6 +119,9 @@ export interface AuditResults {
   potentialFines: number; // Amendes potentielles en euros
   categoryScores: Record<string, number | null>; // Score par catégorie (null si non auditées)
   hasAuditedItems: boolean; // Indique si au moins un item a été audité
+  auditedCount: number; // Nombre d'items contrôlés
+  totalCount: number; // Nombre total d'items à contrôler
+  categoryAuditedCounts: Record<string, { audited: number; total: number }>; // Par catégorie
 }
 
 /**
