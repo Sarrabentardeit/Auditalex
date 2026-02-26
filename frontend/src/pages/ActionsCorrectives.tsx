@@ -22,10 +22,31 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { generatePDFReport } from '../utils/pdfExport';
 import { CircularProgress } from '@mui/material';
-import type { CorrectiveActionData } from '../types';
+import type { CorrectiveActionData, NonConformitySeverity } from '../types';
 import { useSnackbar } from '../hooks/useSnackbar';
 
 type CorrectiveActionRow = CorrectiveActionData;
+
+/** Sévérité selon la note de l'item : 0 = rouge, 0.3 = orange, 0.7 = bleu */
+function getSeverityFromNote(note: number | undefined): NonConformitySeverity | undefined {
+  if (note === 0) return 'rouge';
+  if (note === 0.3) return 'orange';
+  if (note === 0.7) return 'bleu';
+  return undefined;
+}
+
+/** Délai par défaut selon la sévérité (demande client) */
+function getDefaultDelai(severity: NonConformitySeverity): string {
+  if (severity === 'rouge') return 'Immédiatement';
+  if (severity === 'orange') return '72h00';
+  return 'Prochain Audit'; // bleu
+}
+
+const SEVERITY_COLORS: Record<NonConformitySeverity, { bg: string; text: string }> = {
+  rouge: { bg: '#c62828', text: '#fff' },
+  orange: { bg: '#ed6c02', text: '#fff' },
+  bleu: { bg: '#1482B7', text: '#fff' },
+};
 
 // Nombre de lignes vides supplémentaires à afficher
 const EMPTY_VISIBLE_ROWS = 5;
@@ -107,23 +128,26 @@ export default function ActionsCorrectives() {
               
               const rowId = `${category.id}-${item.id}-${obs.id}`;
               
-              // Si la ligne existe déjà (sauvegardée), utiliser les données sauvegardées
-              // Sinon, créer une nouvelle ligne avec les données de l'audit
+              // Si la ligne existe déjà (sauvegardée), utiliser les données sauvegardées (avec sévérité si manquante)
               if (existingRowsMap.has(rowId)) {
-                rows.push(existingRowsMap.get(rowId)!);
+                const existing = existingRowsMap.get(rowId)!;
+                const severity = existing.severity ?? getSeverityFromNote(item.note);
+                rows.push({ ...existing, severity });
               } else {
                 // Construire le texte de l'écart : Catégorie - Item - Observation
                 const categoryName = category.name.replace(/^\d+\.\s*/, '');
                 const ecartText = `${categoryName} - ${item.name}\n${obs.text}`;
-                
+                const severity = getSeverityFromNote(item.note);
+                const defaultDelai = severity ? getDefaultDelai(severity) : '';
                 rows.push({
                   id: rowId,
                   ecart: ecartText,
                   actionCorrective: obs.correctiveAction || '',
-                  delai: '',
+                  delai: defaultDelai,
                   quand: '',
                   visa: '',
                   verification: '',
+                  severity,
                 });
               }
             }
@@ -436,7 +460,20 @@ export default function ActionsCorrectives() {
                     },
                   }}
                 >
-                  <TableCell sx={{ ...cellBorder, minHeight: 40 }}>
+                  <TableCell
+                    sx={{
+                      ...cellBorder,
+                      minHeight: 40,
+                      ...(row.severity && SEVERITY_COLORS[row.severity]
+                        ? {
+                            backgroundColor: SEVERITY_COLORS[row.severity].bg,
+                            color: SEVERITY_COLORS[row.severity].text,
+                            '& .MuiInputBase-input': { color: SEVERITY_COLORS[row.severity].text },
+                            '& .MuiInputBase-input::placeholder': { opacity: 0.8 },
+                          }
+                        : {}),
+                    }}
+                  >
                     <InputBase
                       fullWidth
                       multiline
@@ -458,12 +495,25 @@ export default function ActionsCorrectives() {
                       sx={inputStyle}
                     />
                   </TableCell>
-                  <TableCell sx={cellBorder}>
+                  <TableCell
+                    sx={{
+                      ...cellBorder,
+                      ...(row.severity && SEVERITY_COLORS[row.severity]
+                        ? {
+                            backgroundColor: SEVERITY_COLORS[row.severity].bg,
+                            color: SEVERITY_COLORS[row.severity].text,
+                            '& .MuiInputBase-input': { color: SEVERITY_COLORS[row.severity].text },
+                          }
+                        : {}),
+                    }}
+                  >
                     <InputBase
                       fullWidth
                       value={row.delai}
                       onChange={(e) => handleFieldChange(row.id, 'delai', e.target.value)}
-                      placeholder=""
+                      placeholder={
+                        row.severity ? getDefaultDelai(row.severity) : ''
+                      }
                       sx={inputStyle}
                     />
                   </TableCell>

@@ -24,7 +24,7 @@ interface AuditState {
   updateItemComment: (categoryId: string, itemId: string, comment: string) => Promise<void>;
   addPhoto: (categoryId: string, itemId: string, photoUrl: string) => Promise<void>;
   removePhoto: (categoryId: string, itemId: string, photoIndex: number) => Promise<void>;
-  updateCorrectiveActions: (correctiveActions: Array<{ id: string; ecart: string; actionCorrective: string; delai: string; quand: string; visa: string; verification: string }>) => Promise<void>;
+  updateCorrectiveActions: (correctiveActions: import('../types').CorrectiveActionData[]) => Promise<void>;
   updateAuditDate: (dateExecution: string) => Promise<void>;
   updateAuditAddress: (adresse: string) => Promise<void>;
   calculateResults: () => void;
@@ -834,9 +834,14 @@ export const useAuditStore = create<AuditState>((set, get) => ({
       synced: false,
     };
 
-    // Sauvegarde immédiate pour les actions critiques
-    await saveAuditToBackend(updatedAudit, true);
-    set({ currentAudit: { ...updatedAudit, synced: true } });
+    // Mise à jour immédiate de l'UI (optimistic update) pour que la saisie soit visible tout de suite
+    set({ currentAudit: updatedAudit });
+    // Sauvegarde en arrière-plan
+    saveAuditToBackend(updatedAudit, true).then(() => {
+      get().currentAudit?.id === updatedAudit.id && set({ currentAudit: { ...updatedAudit, synced: true } });
+    }).catch((err) => {
+      logger.error('Erreur sauvegarde action corrective:', err);
+    });
   },
 
   updateItemKO: async (categoryId, itemId, ko) => {

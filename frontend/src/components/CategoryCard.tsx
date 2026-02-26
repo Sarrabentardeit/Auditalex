@@ -18,9 +18,12 @@ import { useMemo } from 'react';
 
 interface CategoryCardProps {
   category: AuditCategory;
+  expandedItemKey?: string | null;
+  onExpandedChange?: (key: string | null) => void;
+  onItemAddSuccess?: () => void;
 }
 
-function CategoryCard({ category }: CategoryCardProps) {
+function CategoryCard({ category, expandedItemKey = null, onExpandedChange, onItemAddSuccess }: CategoryCardProps) {
   // Sélecteur optimisé : ne s'abonne qu'à results, pas à tout le store
   const results = useAuditStore((state) => state.results);
 
@@ -87,31 +90,44 @@ function CategoryCard({ category }: CategoryCardProps) {
         )}
 
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          {category.items.map((item) => (
-            <Accordion key={item.id}>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
-                  <Typography variant="body1" sx={{ flex: 1 }}>
-                    {item.name}
-                  </Typography>
-                  {item.note !== undefined && (
-                    <Chip
-                      label={item.note === 1.0 ? 'Conforme' : item.note === 0.7 ? 'Mineur' : item.note === 0.3 ? 'Moyen' : 'Majeur'}
-                      size="small"
-                      color={
-                        item.note === 1.0 ? 'success' :
-                        item.note === 0.7 ? 'info' :
-                        item.note === 0.3 ? 'warning' : 'error'
-                      }
-                    />
-                  )}
-                </Box>
-              </AccordionSummary>
-              <AccordionDetails>
-                <ItemCard item={item} categoryId={category.id} categoryItems={category.items} />
-              </AccordionDetails>
-            </Accordion>
-          ))}
+          {category.items.map((item) => {
+            const itemKey = `${category.id}-${item.id}`;
+            const isExpanded = expandedItemKey === itemKey;
+            return (
+              <Accordion
+                key={item.id}
+                expanded={isExpanded}
+                onChange={(_, expanded) => onExpandedChange?.(expanded ? itemKey : null)}
+              >
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
+                    <Typography variant="body1" sx={{ flex: 1 }}>
+                      {item.name}
+                    </Typography>
+                    {item.note !== undefined && (
+                      <Chip
+                        label={item.note === 1.0 ? 'Conforme' : item.note === 0.7 ? 'Mineur' : item.note === 0.3 ? 'Moyen' : 'Majeur'}
+                        size="small"
+                        color={
+                          item.note === 1.0 ? 'success' :
+                          item.note === 0.7 ? 'info' :
+                          item.note === 0.3 ? 'warning' : 'error'
+                        }
+                      />
+                    )}
+                  </Box>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <ItemCard
+                    item={item}
+                    categoryId={category.id}
+                    categoryItems={category.items}
+                    onAddSuccess={onItemAddSuccess}
+                  />
+                </AccordionDetails>
+              </Accordion>
+            );
+          })}
         </Box>
       </CardContent>
     </Card>

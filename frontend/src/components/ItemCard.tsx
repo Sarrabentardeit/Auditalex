@@ -28,9 +28,10 @@ interface ItemCardProps {
   item: AuditItem;
   categoryId: string;
   categoryItems: AuditItem[]; // Tous les items de la catégorie (conservé pour compatibilité)
+  onAddSuccess?: () => void; // Appelé après ajout d'un commentaire/observation pour replier l'item
 }
 
-function ItemCard({ item, categoryId, categoryItems: _categoryItems }: ItemCardProps) {
+function ItemCard({ item, categoryId, categoryItems: _categoryItems, onAddSuccess }: ItemCardProps) {
   // Sélecteurs optimisés : ne s'abonnent qu'aux actions nécessaires, pas à tout le store
   const updateItemNonConformities = useAuditStore((state) => state.updateItemNonConformities);
   const updateItemKO = useAuditStore((state) => state.updateItemKO);
@@ -67,14 +68,16 @@ function ItemCard({ item, categoryId, categoryItems: _categoryItems }: ItemCardP
   const handleAddObservation = useCallback(async () => {
     if (selectedObservationText && selectedObservationText !== '__CUSTOM__') {
       await addObservation(categoryId, item.id, selectedObservationText, selectedActionForNewObservation || undefined);
-      setSelectedObservationText(''); // Réinitialiser la sélection
-      setSelectedActionForNewObservation(''); // Réinitialiser l'action
-      scrollItemIntoView(); // Rester positionné sur l'item pour éviter les oublis
+      setSelectedObservationText('');
+      setSelectedActionForNewObservation('');
+      scrollItemIntoView();
+      // Ne pas replier l'item : le client veut voir la saisie apparaître tout de suite dans la liste
     } else if (customObservationText.trim()) {
       await addObservation(categoryId, item.id, customObservationText.trim());
       setCustomObservationText('');
       setShowCustomObservationField(false);
-      scrollItemIntoView(); // Rester positionné sur l'item pour éviter les oublis
+      scrollItemIntoView();
+      // Ne pas replier l'item : le client veut voir la saisie apparaître tout de suite dans la liste
     }
   }, [categoryId, item.id, selectedObservationText, selectedActionForNewObservation, customObservationText, addObservation, scrollItemIntoView]);
 

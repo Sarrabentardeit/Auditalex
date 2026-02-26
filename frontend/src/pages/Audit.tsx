@@ -26,6 +26,7 @@ export default function Audit() {
   const markAuditAsCompleted = useAuditStore((state) => state.markAuditAsCompleted);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [expandedItemKey, setExpandedItemKey] = useState<string | null>(null);
   const { showSuccess, showError, SnackbarComponent } = useSnackbar();
   
   // États locaux pour les champs de texte (réactivité immédiate)
@@ -376,7 +377,13 @@ export default function Audit() {
         {/* Categories */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {currentAudit.categories.map((category) => (
-            <CategoryCard key={category.id} category={category} />
+            <CategoryCard
+              key={category.id}
+              category={category}
+              expandedItemKey={expandedItemKey}
+              onExpandedChange={setExpandedItemKey}
+              onItemAddSuccess={() => setExpandedItemKey(null)}
+            />
           ))}
         </Box>
       </Box>

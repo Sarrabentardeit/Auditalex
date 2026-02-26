@@ -84,6 +84,9 @@ export interface AuditCategory {
 /**
  * Données d'un audit complet
  */
+/** Sévérité pour le tableau récap (couleur + délai par défaut) */
+export type NonConformitySeverity = 'rouge' | 'orange' | 'bleu';
+
 export interface CorrectiveActionData {
   id: string;
   ecart: string;
@@ -92,6 +95,8 @@ export interface CorrectiveActionData {
   quand: string;
   visa: string;
   verification: string;
+  /** Sévérité (non-conformité majeure / moyenne / mineure) pour style et délai par défaut */
+  severity?: NonConformitySeverity;
 }
 
 export interface Audit {
