@@ -20,10 +20,9 @@ interface CategoryCardProps {
   category: AuditCategory;
   expandedItemKey?: string | null;
   onExpandedChange?: (key: string | null) => void;
-  onItemAddSuccess?: () => void;
 }
 
-function CategoryCard({ category, expandedItemKey = null, onExpandedChange, onItemAddSuccess }: CategoryCardProps) {
+function CategoryCard({ category, expandedItemKey = null, onExpandedChange }: CategoryCardProps) {
   // Sélecteur optimisé : ne s'abonne qu'à results, pas à tout le store
   const results = useAuditStore((state) => state.results);
 
@@ -122,7 +121,6 @@ function CategoryCard({ category, expandedItemKey = null, onExpandedChange, onIt
                     item={item}
                     categoryId={category.id}
                     categoryItems={category.items}
-                    onAddSuccess={onItemAddSuccess}
                   />
                 </AccordionDetails>
               </Accordion>

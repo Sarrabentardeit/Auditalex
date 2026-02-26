@@ -28,10 +28,9 @@ interface ItemCardProps {
   item: AuditItem;
   categoryId: string;
   categoryItems: AuditItem[]; // Tous les items de la catégorie (conservé pour compatibilité)
-  onAddSuccess?: () => void; // Appelé après ajout d'un commentaire/observation pour replier l'item
 }
 
-function ItemCard({ item, categoryId, categoryItems: _categoryItems, onAddSuccess }: ItemCardProps) {
+function ItemCard({ item, categoryId, categoryItems: _categoryItems }: ItemCardProps) {
   // Sélecteurs optimisés : ne s'abonnent qu'aux actions nécessaires, pas à tout le store
   const updateItemNonConformities = useAuditStore((state) => state.updateItemNonConformities);
   const updateItemKO = useAuditStore((state) => state.updateItemKO);

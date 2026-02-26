@@ -382,7 +382,6 @@ export default function Audit() {
               category={category}
               expandedItemKey={expandedItemKey}
               onExpandedChange={setExpandedItemKey}
-              onItemAddSuccess={() => setExpandedItemKey(null)}
             />
           ))}
         </Box>
