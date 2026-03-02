@@ -31,6 +31,31 @@ import PersonIcon from '@mui/icons-material/Person';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import type { Audit } from '../types';
+
+/** Grouper les audits par jour (date d'exécution), triés du plus récent au plus ancien */
+function groupAuditsByDay(auditsList: Audit[]): Array<{ dayKey: string; dayLabel: string; audits: Audit[] }> {
+  const sorted = [...auditsList].sort((a, b) => {
+    const dateA = new Date(a.dateExecution || a.createdAt).getTime();
+    const dateB = new Date(b.dateExecution || b.createdAt).getTime();
+    if (dateA !== dateB) return dateB - dateA;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+  const byDay = new Map<string, Audit[]>();
+  for (const audit of sorted) {
+    const raw = audit.dateExecution || audit.createdAt;
+    const dayKey = raw.includes('T') ? raw.split('T')[0] : raw.substring(0, 10);
+    if (!byDay.has(dayKey)) byDay.set(dayKey, []);
+    byDay.get(dayKey)!.push(audit);
+  }
+  return Array.from(byDay.entries())
+    .sort(([a], [b]) => b.localeCompare(a))
+    .map(([dayKey, audits]) => ({
+      dayKey,
+      dayLabel: format(new Date(dayKey), 'd MMMM yyyy', { locale: fr }),
+      audits,
+    }));
+}
 import { useSnackbar } from '../hooks/useSnackbar';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { logger } from '../utils/logger';
@@ -599,7 +624,6 @@ export default function Dashboard() {
                   return (
                     <Accordion
                       key={group.id}
-                      defaultExpanded
                       elevation={0}
                       sx={{
                         border: '1px solid',
@@ -688,8 +712,13 @@ export default function Dashboard() {
                         </Box>
                       </AccordionSummary>
                       <AccordionDetails sx={{ p: 0, pt: 2 }}>
-                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2, p: 2 }}>
-                          {group.audits.map((audit) => {
+                        {groupAuditsByDay(group.audits).map(({ dayKey, dayLabel, audits: dayAudits }) => (
+                          <Box key={dayKey} sx={{ p: 2, pb: 3 }}>
+                            <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2, color: 'text.secondary', fontSize: '0.95rem' }}>
+                              {dayLabel}
+                            </Typography>
+                            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2 }}>
+                              {dayAudits.map((audit) => {
                             const isCompleted = audit.status === 'completed';
 
                             return (
@@ -788,7 +817,9 @@ export default function Dashboard() {
                               </Box>
                             );
                           })}
-                        </Box>
+                            </Box>
+                          </Box>
+                        ))}
                       </AccordionDetails>
                     </Accordion>
                   );
@@ -796,8 +827,14 @@ export default function Dashboard() {
               })()}
             </Box>
           ) : (
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2 }}>
-              {audits.map((audit) => {
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              {groupAuditsByDay(audits).map(({ dayKey, dayLabel, audits: dayAudits }) => (
+                <Box key={dayKey}>
+                  <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2, color: 'text.secondary', fontSize: '0.95rem' }}>
+                    {dayLabel}
+                  </Typography>
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2 }}>
+                    {dayAudits.map((audit) => {
                 // Le statut est la source de vérité
                 const isCompleted = audit.status === 'completed';
 
@@ -875,14 +912,16 @@ export default function Dashboard() {
                           px: 1.5,
                           borderRadius: 1.5,
                           bgcolor: alpha('#000', 0.02),
+                          cursor: 'pointer',
                         }}
+                        onClick={() => handleViewAudit(audit.id)}
                       >
                         <LocationOnIcon sx={{ fontSize: 18, color: 'text.secondary', opacity: 0.6 }} />
                         <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
                           {audit.adresse || 'Adresse non renseignée'}
                         </Typography>
                       </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, cursor: 'pointer' }} onClick={() => handleViewAudit(audit.id)}>
                         <CalendarTodayIcon sx={{ fontSize: 16, color: 'text.secondary', opacity: 0.5 }} />
                         <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
                           Créé le {format(new Date(audit.createdAt), 'dd/MM/yyyy à HH:mm', { locale: fr })}
@@ -892,6 +931,9 @@ export default function Dashboard() {
                   </Box>
                 );
               })}
+                  </Box>
+                </Box>
+              ))}
             </Box>
           )
         )}
