@@ -11,6 +11,7 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { useAuthStore } from '../store/authStore';
+import { loadCategoriesFromJSON } from '../services/dataLoader';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -22,8 +23,9 @@ export default function Login() {
   const [retryAfter, setRetryAfter] = useState<number | null>(null);
 
   useEffect(() => {
-    // Vérifier si l'utilisateur est déjà connecté
     checkAuth();
+    // Précharger le JSON pour accélérer l'ouverture des audits après connexion
+    loadCategoriesFromJSON().catch(() => {});
   }, [checkAuth]);
 
   useEffect(() => {

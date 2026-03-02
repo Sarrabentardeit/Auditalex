@@ -1,4 +1,5 @@
 import { Response, NextFunction } from 'express';
+import mongoose from 'mongoose';
 import { Audit } from '../models/Audit.model';
 import { createError } from '../middleware/errorHandler';
 import { AuthRequest } from '../middleware/auth';
@@ -78,15 +79,40 @@ export async function getAuditById(
 ): Promise<void> {
   try {
     const { id } = req.params;
+    const includePhotos = req.query.includePhotos === '1' || req.query.includePhotos === 'true';
     const userId = req.user!.id;
     const role = req.user!.role;
 
-    let audit;
+    let audit: any;
 
-    if (role === 'admin') {
-      audit = await Audit.findById(id).populate('auditorId', 'name email');
+    if (includePhotos) {
+      // Avec photos : findById classique
+      if (role === 'admin') {
+        audit = await Audit.findById(id).populate('auditorId', 'name email');
+      } else {
+        audit = await Audit.findOne({ _id: id, auditorId: userId }).populate('auditorId', 'name email');
+      }
     } else {
-      audit = await Audit.findOne({ _id: id, auditorId: userId }).populate('auditorId', 'name email');
+      // Sans photos : agrégation avec $unset pour exclure categories.items.photos
+      // → MongoDB ne transfère pas les photos au serveur Node (gain réseau/mémoire)
+      const matchFilter: any = { _id: new mongoose.Types.ObjectId(id) };
+      if (role !== 'admin') {
+        matchFilter.auditorId = new mongoose.Types.ObjectId(userId);
+      }
+      const results = await Audit.aggregate([
+        { $match: matchFilter },
+        { $unset: 'categories.items.photos' },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'auditorId',
+            foreignField: '_id',
+            as: 'auditor',
+          },
+        },
+        { $unwind: { path: '$auditor', preserveNullAndEmptyArrays: true } },
+      ]).limit(1);
+      audit = results[0];
     }
 
     if (!audit) {
@@ -94,11 +120,15 @@ export async function getAuditById(
       return;
     }
 
+    const auditorIdValue = audit.auditorId?.toString?.() ?? audit.auditorId?.toString();
+    const auditorName = audit.auditor?.name ?? (audit.auditorId as any)?.name;
+    const auditorEmail = audit.auditor?.email ?? (audit.auditorId as any)?.email;
+
     res.json({
       id: audit._id.toString(),
-      auditorId: audit.auditorId.toString(),
-      auditorName: (audit.auditorId as any).name,
-      auditorEmail: (audit.auditorId as any).email,
+      auditorId: auditorIdValue,
+      auditorName,
+      auditorEmail,
       dateExecution: audit.dateExecution,
       adresse: audit.adresse,
       status: audit.status,

@@ -433,12 +433,22 @@ export const useAuditStore = create<AuditState>((set, get) => ({
         }
       }
       
-      // Sinon, charger depuis le backend
-      const response = await auditApi.getAuditById(id);
+      // Charger en parallèle : API + JSON (gain de temps)
+      const [response, freshCategories] = await Promise.all([
+        auditApi.getAuditById(id),
+        loadCategoriesFromJSON(),
+      ]);
       
       if (!response) {
         logger.error('Audit non trouvé');
-        return;
+        throw new Error('Audit non trouvé');
+      }
+
+      // Normaliser dateExecution au format yyyy-MM-dd pour input type="date"
+      let dateExecution = response.dateExecution;
+      if (dateExecution) {
+        const d = new Date(dateExecution);
+        if (!isNaN(d.getTime())) dateExecution = d.toISOString().split('T')[0];
       }
 
       // Convertir la réponse API en format Audit
@@ -447,7 +457,7 @@ export const useAuditStore = create<AuditState>((set, get) => ({
         auditorId: response.auditorId,
         auditorName: response.auditorName,
         auditorEmail: response.auditorEmail,
-        dateExecution: response.dateExecution,
+        dateExecution: dateExecution || response.dateExecution,
         adresse: response.adresse,
         categories: response.categories || [],
         correctiveActions: response.correctiveActions || [],
@@ -459,10 +469,7 @@ export const useAuditStore = create<AuditState>((set, get) => ({
       };
 
       if (audit) {
-      // Recharger les données depuis le JSON pour avoir les dernières mises à jour
-      const freshCategories = await loadCategoriesFromJSON();
-      
-      // Créer un map pour retrouver rapidement les items par nom
+      // Créer un map pour retrouver rapidement les items par nom (freshCategories déjà chargé en parallèle)
       const freshItemsMap = new Map<string, AuditCategory['items'][0]>();
       freshCategories.forEach((cat: AuditCategory) => {
         cat.items.forEach((item) => {
@@ -520,26 +527,36 @@ export const useAuditStore = create<AuditState>((set, get) => ({
         })),
       };
       
-      // Toujours sauvegarder pour mettre à jour les listes disponibles depuis le JSON
-      try {
-        await auditApi.updateAudit(migratedAudit.id, {
-          dateExecution: migratedAudit.dateExecution,
-          adresse: migratedAudit.adresse,
-          categories: migratedAudit.categories,
-          correctiveActions: migratedAudit.correctiveActions,
-        });
-      } catch (error) {
-        logger.error('Erreur lors de la sauvegarde de l\'audit:', error);
-      }
-      
+      // Afficher l'audit immédiatement (sans photos = chargement rapide)
       set({ currentAudit: migratedAudit });
       getDebouncedCalculateResults(get, set)();
+
+      // Charger les photos en arrière-plan pour ne pas bloquer l'affichage
+      auditApi.getAuditById(id, { includePhotos: true }).then((fullResponse) => {
+        const { currentAudit: current } = get();
+        if (current?.id !== id || !Array.isArray(fullResponse?.categories)) return;
+        const fullCats = fullResponse.categories;
+        const merged = current.categories.map((cat, ci) => {
+          const fullCat = fullCats[ci];
+          if (!fullCat?.items?.length) return cat;
+          return {
+            ...cat,
+            items: cat.items.map((item, ii) => {
+              const fullItem = fullCat.items[ii];
+              const photos = fullItem?.photos?.length ? fullItem.photos : item.photos;
+              return { ...item, photos: photos || [] };
+            }),
+          };
+        });
+        set({ currentAudit: { ...current, categories: merged } });
+      }).catch(() => {});
       }
     } catch (error) {
       logger.error('Erreur lors du chargement de l\'audit:', error);
       if (error instanceof ApiError) {
         logger.error('Erreur API:', error.status, error.message);
       }
+      throw error;
     }
   },
 
@@ -923,7 +940,7 @@ export const useAuditStore = create<AuditState>((set, get) => ({
           ...cat,
           items: cat.items.map((item) =>
             item.id === itemId
-              ? { ...item, photos: [...item.photos, photoUrl] }
+              ? { ...item, photos: [...(item.photos ?? []), photoUrl] }
               : item
           ),
         };
@@ -956,7 +973,7 @@ export const useAuditStore = create<AuditState>((set, get) => ({
           ...cat,
           items: cat.items.map((item) => {
             if (item.id === itemId) {
-              const newPhotos = [...item.photos];
+              const newPhotos = [...(item.photos ?? [])];
               newPhotos.splice(photoIndex, 1);
               return { ...item, photos: newPhotos };
             }

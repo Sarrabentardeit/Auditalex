@@ -566,10 +566,10 @@ function ItemCard({ item, categoryId, categoryItems: _categoryItems }: ItemCardP
         <PhotoUpload
           onPhotoAdded={handlePhotoAdded}
         />
-        {item.photos.length > 0 && (
+        {(item.photos ?? []).length > 0 && (
           <Box sx={{ mt: 2 }}>
             <PhotoGallery
-              photos={item.photos}
+              photos={item.photos ?? []}
               onDelete={(index) => removePhoto(categoryId, item.id, index)}
             />
           </Box>

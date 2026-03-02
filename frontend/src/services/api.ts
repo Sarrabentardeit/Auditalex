@@ -319,9 +319,11 @@ export const auditApi = {
 
   /**
    * Récupérer un audit par ID
+   * @param includePhotos - si false (défaut), les photos sont exclues pour un chargement rapide
    */
-  async getAuditById(id: string) {
-    return request<any>(`/audits/${id}`);
+  async getAuditById(id: string, options?: { includePhotos?: boolean }) {
+    const query = options?.includePhotos ? '?includePhotos=1' : '';
+    return request<any>(`/audits/${id}${query}`);
   },
 
   /**

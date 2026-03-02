@@ -59,12 +59,13 @@ function groupAuditsByDay(auditsList: Audit[]): Array<{ dayKey: string; dayLabel
 import { useSnackbar } from '../hooks/useSnackbar';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { logger } from '../utils/logger';
+import { loadCategoriesFromJSON } from '../services/dataLoader';
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const location = useLocation();
   const { currentUser, isAuthenticated, logout, isAdmin, users, loadAllUsers } = useAuthStore();
-  const { audits, loadAllAudits, deleteAudit } = useAuditStore();
+  const { audits, loadAllAudits, deleteAudit, loadAudit } = useAuditStore();
   const { showSuccess, showError, SnackbarComponent } = useSnackbar();
   const { showConfirm, ConfirmDialogComponent } = useConfirmDialog();
 
@@ -76,6 +77,9 @@ export default function Dashboard() {
       navigate('/login');
       return;
     }
+
+    // Précharger le JSON pour accélérer l'ouverture des audits
+    loadCategoriesFromJSON().catch(() => {});
 
     const fetchData = async () => {
       setLoading(true);
@@ -109,6 +113,11 @@ export default function Dashboard() {
 
   const handleViewAudit = (auditId: string) => {
     navigate(`/audit/${auditId}`);
+  };
+
+  const handlePrefetchAudit = (auditId: string) => {
+    if (!auditId || auditId.startsWith('temp_')) return;
+    loadAudit(auditId).catch(() => {});
   };
 
   const handleAdminPanel = () => {
@@ -725,6 +734,7 @@ export default function Dashboard() {
                               <Box key={audit.id}>
                                 <Paper
                                   elevation={0}
+                                  onMouseEnter={() => handlePrefetchAudit(audit.id)}
                                   sx={{
                                     height: '100%',
                                     p: { xs: 2, sm: 3 },
@@ -842,6 +852,7 @@ export default function Dashboard() {
                   <Box key={audit.id}>
                     <Paper
                       elevation={0}
+                      onMouseEnter={() => handlePrefetchAudit(audit.id)}
                       sx={{
                         height: '100%',
                         p: { xs: 2, sm: 3 },

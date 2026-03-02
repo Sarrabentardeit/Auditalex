@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Typography, Box, Paper, Button, CircularProgress, TextField, Tooltip } from '@mui/material';
+import { Typography, Box, Paper, Button, CircularProgress, TextField, Tooltip, Skeleton } from '@mui/material';
 import { useAuditStore } from '../store/auditStore';
 import CategoryCard from '../components/CategoryCard';
 import Layout from '../components/Layout';
@@ -25,7 +25,8 @@ export default function Audit() {
   const createAudit = useAuditStore((state) => state.createAudit);
   const markAuditAsCompleted = useAuditStore((state) => state.markAuditAsCompleted);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-  const [loading, setLoading] = useState(false);
+  // Skeleton immédiat à l'ouverture d'un audit (id présent = on charge)
+  const [loading, setLoading] = useState(!!(id && id !== 'new'));
   const [expandedItemKey, setExpandedItemKey] = useState<string | null>(null);
   const { showSuccess, showError, SnackbarComponent } = useSnackbar();
   
@@ -33,10 +34,12 @@ export default function Audit() {
   const [localDate, setLocalDate] = useState<string>('');
   const [localAddress, setLocalAddress] = useState<string>('');
   
-  // Synchroniser les états locaux avec currentAudit
+  // Synchroniser les états locaux avec currentAudit (format yyyy-MM-dd pour input date)
   useEffect(() => {
     if (currentAudit) {
-      setLocalDate(currentAudit.dateExecution || '');
+      const raw = currentAudit.dateExecution || '';
+      const dateStr = raw ? (raw.includes('T') ? raw.split('T')[0] : raw.substring(0, 10)) : '';
+      setLocalDate(dateStr);
       setLocalAddress(currentAudit.adresse || '');
     }
   }, [currentAudit?.id, currentAudit?.dateExecution, currentAudit?.adresse]);
@@ -72,24 +75,34 @@ export default function Audit() {
   }, [currentAudit?.categories]);
 
   // Charger l'audit si un ID est fourni, sinon créer un nouvel audit
-  // IMPORTANT: Utiliser useRef pour éviter les créations multiples
   const hasInitialized = React.useRef(false);
-  
+  const lastLoadedId = React.useRef<string | undefined>(undefined);
+
   useEffect(() => {
-    // Protection contre les appels multiples
-    if (hasInitialized.current) {
-      return;
+    // Réinitialiser quand on change d'audit (navigation vers un autre)
+    if (id !== lastLoadedId.current) {
+      hasInitialized.current = false;
+      lastLoadedId.current = id;
     }
+    if (hasInitialized.current) return;
 
     const initializeAudit = async () => {
       if (id) {
-        // Charger un audit existant
+        // Déjà chargé (ex: préchargement au survol) → affichage immédiat
+        const { currentAudit: cur } = useAuditStore.getState();
+        if (cur?.id === id) {
+          setLoading(false);
+          hasInitialized.current = true;
+          lastLoadedId.current = id;
+          return;
+        }
         setLoading(true);
         hasInitialized.current = true;
         try {
           await loadAudit(id);
         } catch (error) {
           logger.error('Erreur lors du chargement de l\'audit:', error);
+          showError('Impossible de charger l\'audit. Vérifiez votre connexion ou que l\'audit existe.');
           navigate('/dashboard');
         } finally {
           setLoading(false);
@@ -153,6 +166,39 @@ export default function Audit() {
       setIsGeneratingPDF(false);
     }
   };
+
+  if (loading && id) {
+    // Skeleton pour donner l'impression de chargement immédiat
+    return (
+      <Layout>
+        <Box sx={{ maxWidth: 900, mx: 'auto' }}>
+          <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
+            <Skeleton variant="rounded" width={80} height={36} />
+            <Skeleton variant="rounded" width={120} height={36} />
+            <Skeleton variant="rounded" width={100} height={36} />
+          </Box>
+          <Typography variant="h4" sx={{ mb: 2 }}>Audit d'Hygiène</Typography>
+          <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+            <Skeleton variant="rounded" width={200} height={56} />
+            <Skeleton variant="rounded" sx={{ flex: 1 }} height={56} />
+          </Box>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' }, gap: 2, mb: 3 }}>
+            <Skeleton variant="rounded" height={100} />
+            <Skeleton variant="rounded" height={100} />
+            <Skeleton variant="rounded" height={100} />
+          </Box>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} variant="rounded" height={120} />
+            ))}
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+            <CircularProgress size={24} />
+          </Box>
+        </Box>
+      </Layout>
+    );
+  }
 
   if (loading) {
     return (
