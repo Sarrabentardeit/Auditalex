@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alexann – Documentation Technique</title>
+  <style>
+    @media print {
+      body { margin: 0; padding: 20px; }
+      .page-break { page-break-before: always; }
+      h1, h2, h3 { page-break-after: avoid; }
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.5;
+      color: #333;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px;
+    }
+    h1 {
+      font-size: 24px;
+      border-bottom: 2px solid #1482B7;
+      padding-bottom: 10px;
+      margin-top: 0;
+    }
+    h2 {
+      font-size: 18px;
+      color: #1482B7;
+      margin-top: 28px;
+    }
+    h3 {
+      font-size: 15px;
+      margin-top: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 13px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: 600;
+    }
+    pre {
+      background: #f8f8f8;
+      padding: 16px;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-size: 12px;
+      border: 1px solid #e0e0e0;
+    }
+    ul {
+      margin: 8px 0;
+      padding-left: 24px;
+    }
+    li { margin: 6px 0; }
+    .meta { color: #666; font-size: 12px; margin-bottom: 24px; }
+  </style>
+</head>
+<body>
+
+<h1>Alexann – Audit d'Hygiène (PWA)</h1>
+<p class="meta">Documentation technique – Architecture, paramétrages et maintenance</p>
+
+<!-- ========== 1. ARCHITECTURE ========== -->
+<h2>1. Architecture technique du projet</h2>
+
+<p><strong>Alexann – Audit d'Hygiène</strong> repose sur une architecture client-serveur avec base de données NoSQL.</p>
+
+<h3>1.1 Vue d'ensemble</h3>
+<pre>
+┌─────────────────┐      HTTPS       ┌─────────────────┐      ┌─────────────────┐
+│   Navigateur    │ ◄──────────────► │  Nginx (VPS)    │ ◄───► │   MongoDB       │
+│   (PWA React)   │                  │  Reverse Proxy  │      │   Base de       │
+└─────────────────┘                  └────────┬────────┘      │   données       │
+        │                                      │               └─────────────────┘
+        │                                      │
+        │                              ┌───────┴───────┐
+        │                              │  Backend Node │
+        │                              │  (Express API)│
+        │                              └───────────────┘
+        │
+        └──► Mode hors ligne : données en cache local (PWA)
+</pre>
+
+<h3>1.2 Frontend (application web)</h3>
+<ul>
+  <li><strong>Technologies :</strong> React 19, TypeScript, Vite 7, Material-UI (MUI v7), React Router, Zustand</li>
+  <li><strong>Fonctionnalités :</strong> génération PDF (jsPDF), compression d'images (browser-image-compression), PWA (Workbox)</li>
+  <li><strong>Structure :</strong> pages (Login, Dashboard, Audit, ActionsCorrectives, Users), composants réutilisables, store Zustand pour l'état global</li>
+  <li><strong>Données :</strong> grille d'audit définie dans <code>data_structure.json</code> (catégories, items, observations, mesures correctives)</li>
+</ul>
+
+<h3>1.3 Backend (API REST)</h3>
+<ul>
+  <li><strong>Technologies :</strong> Node.js, Express, TypeScript, Mongoose</li>
+  <li><strong>Sécurité :</strong> JWT, bcrypt, Helmet, CORS, rate limiting, compression</li>
+  <li><strong>Routes principales :</strong>
+    <ul>
+      <li><code>/api/auth</code> : connexion, vérification de session</li>
+      <li><code>/api/users</code> : gestion des utilisateurs (admin)</li>
+      <li><code>/api/audits</code> : CRUD des audits</li>
+    </ul>
+  </li>
+  <li><strong>Base de données :</strong> MongoDB (Atlas ou instance locale Docker)</li>
+</ul>
+
+<h3>1.4 Infrastructure de déploiement</h3>
+<ul>
+  <li><strong>Développement :</strong> frontend (Vite, port 5173), backend (port 3000), MongoDB (port 27017 ou Atlas)</li>
+  <li><strong>Production (Docker) :</strong> 3 conteneurs (frontend Nginx, backend Node, MongoDB)</li>
+  <li><strong>VPS :</strong> Nginx en reverse proxy, SSL (Let's Encrypt), redirection HTTP → HTTPS</li>
+  <li><strong>URL :</strong> alexann.nav.ovh (ou domaine configuré)</li>
+</ul>
+
+<div class="page-break"></div>
+
+<!-- ========== 2. PARAMETRAGES ========== -->
+<h2>2. Paramétrages spécifiques</h2>
+
+<h3>2.1 Variables d'environnement (backend)</h3>
+<table>
+  <tr><th>Variable</th><th>Description</th><th>Exemple</th></tr>
+  <tr><td>MONGODB_URI</td><td>Chaîne de connexion MongoDB</td><td>mongodb://... ou mongodb+srv://...</td></tr>
+  <tr><td>JWT_SECRET</td><td>Secret pour les tokens JWT (≥ 32 caractères)</td><td>Chaîne aléatoire sécurisée</td></tr>
+  <tr><td>JWT_EXPIRES_IN</td><td>Durée de validité du token</td><td>7d</td></tr>
+  <tr><td>PORT</td><td>Port du serveur backend</td><td>3000</td></tr>
+  <tr><td>CORS_ORIGIN</td><td>Origine autorisée (URL du frontend)</td><td>https://alexann.nav.ovh</td></tr>
+</table>
+
+<h3>2.2 Variables d'environnement (frontend)</h3>
+<table>
+  <tr><th>Variable</th><th>Description</th><th>Exemple</th></tr>
+  <tr><td>VITE_API_URL</td><td>URL de base de l'API</td><td>https://alexann.nav.ovh/api</td></tr>
+</table>
+
+<h3>2.3 Configuration Docker</h3>
+<ul>
+  <li><strong>MongoDB :</strong> MONGO_ROOT_PASSWORD pour l'utilisateur admin</li>
+  <li><strong>Backend :</strong> JWT_SECRET, CORS_ORIGIN, MONGODB_URI (connexion au conteneur MongoDB)</li>
+  <li><strong>Frontend :</strong> VITE_API_URL défini au build</li>
+</ul>
+
+<h3>2.4 Grille d'audit (data_structure.json)</h3>
+<ul>
+  <li><strong>Fichier :</strong> frontend/public/data_structure.json</li>
+  <li><strong>Contenu :</strong> catégories, items, observations prédéfinies, mesures correctives par item</li>
+  <li><strong>Modification :</strong> éditer le fichier puis redéployer le frontend</li>
+</ul>
+
+<h3>2.5 PWA (manifest.json)</h3>
+<ul>
+  <li><strong>Fichier :</strong> frontend/public/manifest.json</li>
+  <li><strong>Paramètres :</strong> nom, icônes, thème, mode standalone, raccourcis</li>
+</ul>
+
+<div class="page-break"></div>
+
+<!-- ========== 3. MAINTENANCE ========== -->
+<h2>3. Points d'attention pour la maintenance</h2>
+
+<h3>3.1 Base de données (MongoDB)</h3>
+<ul>
+  <li><strong>Sauvegardes :</strong> planifier des sauvegardes régulières (quotidiennes ou hebdomadaires)</li>
+  <li><strong>Taille :</strong> les audits avec photos (base64) peuvent augmenter fortement le volume ; surveiller l'espace disque</li>
+  <li><strong>Index :</strong> index sur createdAt et auditorId pour les requêtes de liste ; vérifier les performances si la base grossit</li>
+</ul>
+
+<h3>3.2 Sécurité</h3>
+<ul>
+  <li><strong>JWT_SECRET :</strong> utiliser une valeur longue et aléatoire, ne jamais la committer dans le dépôt</li>
+  <li><strong>Mots de passe MongoDB :</strong> stocker uniquement dans des variables d'environnement ou un gestionnaire de secrets</li>
+  <li><strong>Renouvellement SSL :</strong> Certbot/Let's Encrypt ; vérifier que le renouvellement automatique fonctionne</li>
+</ul>
+
+<h3>3.3 Performance</h3>
+<ul>
+  <li><strong>Chargement des audits :</strong> les audits avec beaucoup de photos sont chargés sans photos par défaut, puis les photos sont chargées en arrière-plan</li>
+  <li><strong>Limite JSON :</strong> le backend accepte des requêtes jusqu'à 100 MB pour les audits avec photos</li>
+  <li><strong>Nginx :</strong> client_max_body_size 50M ; augmenter si nécessaire pour des uploads plus lourds</li>
+</ul>
+
+<h3>3.4 Maintenance applicative</h3>
+<ul>
+  <li><strong>Mises à jour :</strong> mettre à jour les dépendances npm régulièrement (sécurité et correctifs)</li>
+  <li><strong>Logs :</strong> consulter les logs Nginx (/var/log/nginx/audit_*.log) et les logs backend en cas d'incident</li>
+  <li><strong>Scripts utilitaires :</strong> init-admin pour créer un admin, cleanup-audits pour nettoyer les doublons éventuels</li>
+</ul>
+
+<h3>3.5 Surveillance</h3>
+<ul>
+  <li><strong>Health check :</strong> GET /health et GET /api/health pour vérifier que le backend répond</li>
+  <li><strong>Docker :</strong> healthchecks configurés sur les conteneurs ; surveiller les redémarrages</li>
+  <li><strong>MongoDB :</strong> surveiller la connexion et les erreurs de requêtes</li>
+</ul>
+
+<h3>3.6 Évolutions prévues</h3>
+<ul>
+  <li><strong>Intégration Nextcloud :</strong> envoi des PDF vers un serveur Nextcloud (WebDAV) ; à paramétrer selon les besoins du client</li>
+  <li><strong>Grille d'audit :</strong> toute modification de data_structure.json nécessite un redéploiement du frontend</li>
+</ul>
+
+</body>
+</html>
