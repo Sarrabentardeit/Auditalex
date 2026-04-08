@@ -1,6 +1,7 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { lazy, Suspense } from 'react';
-import { CircularProgress, Box } from '@mui/material';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { lazy, Suspense, useEffect } from 'react';
+import { CircularProgress, Box, Snackbar, Alert } from '@mui/material';
+import { useState } from 'react';
 import OfflineIndicator from './components/OfflineIndicator';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -19,8 +20,35 @@ const LoadingFallback = () => (
 );
 
 function App() {
+  const navigate = useNavigate();
+  const [sessionExpiredOpen, setSessionExpiredOpen] = useState(false);
+
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      setSessionExpiredOpen(true);
+      // Redirection douce après 3 secondes pour laisser le temps de lire le message
+      setTimeout(() => {
+        setSessionExpiredOpen(false);
+        navigate('/login', { replace: true });
+      }, 3000);
+    };
+
+    window.addEventListener('auth:sessionExpired', handleSessionExpired);
+    return () => window.removeEventListener('auth:sessionExpired', handleSessionExpired);
+  }, [navigate]);
+
   return (
     <>
+      {/* Notification de session expirée */}
+      <Snackbar
+        open={sessionExpiredOpen}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert severity="warning" variant="filled" sx={{ width: '100%', fontWeight: 600 }}>
+          Votre session a expiré. Redirection vers la page de connexion...
+        </Alert>
+      </Snackbar>
+
       <Suspense fallback={<LoadingFallback />}>
         <Routes>
           {/* Route publique */}

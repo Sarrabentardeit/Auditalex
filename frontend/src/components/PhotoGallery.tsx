@@ -49,12 +49,12 @@ export default function PhotoGallery({ photos, onDelete }: PhotoGalleryProps) {
       >
         {photos.map((photo, index) => (
           <ImageListItem
-            key={index}
+            key={`photo-${photos.length}-${index}`}
             sx={{
               cursor: 'pointer',
-              '&:hover': {
-                opacity: 0.8,
-              },
+              borderRadius: 1,
+              overflow: 'hidden',
+              '&:hover': { opacity: 0.85 },
             }}
             onClick={() => setSelectedPhoto(photo)}
           >
@@ -62,17 +62,14 @@ export default function PhotoGallery({ photos, onDelete }: PhotoGalleryProps) {
               src={photo}
               alt={`Photo ${index + 1}`}
               loading="lazy"
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-              }}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
             <ImageListItemBar
               title={`Photo ${index + 1}`}
               actionIcon={
                 <IconButton
                   sx={{ color: 'white' }}
+                  aria-label={`Supprimer la photo ${index + 1}`}
                   onClick={(e) => handleDelete(index, e)}
                   size="small"
                 >
@@ -95,7 +92,10 @@ export default function PhotoGallery({ photos, onDelete }: PhotoGalleryProps) {
         <DialogTitle>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Typography variant="h6">Photo</Typography>
-            <IconButton onClick={() => setSelectedPhoto(null)}>
+            <IconButton
+              aria-label="Fermer la photo"
+              onClick={() => setSelectedPhoto(null)}
+            >
               <CloseIcon />
             </IconButton>
           </Box>

@@ -254,6 +254,7 @@ export default function Admin() {
                 <TableCell align="right">
                   <IconButton
                     size="small"
+                    aria-label={`Modifier ${user.name}`}
                     onClick={() => handleOpenDialog(user)}
                     disabled={user.id === currentUser?.id}
                   >
@@ -262,6 +263,7 @@ export default function Admin() {
                   <IconButton
                     size="small"
                     color="error"
+                    aria-label={`Supprimer ${user.name}`}
                     onClick={() => handleDelete(user.id)}
                     disabled={user.id === currentUser?.id}
                   >
@@ -285,7 +287,14 @@ export default function Admin() {
         <DialogTitle>
           {editingUser ? 'Modifier l\'utilisateur' : 'Créer un utilisateur'}
         </DialogTitle>
-        <DialogContent>
+        <DialogContent
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              handleSubmit();
+            }
+          }}
+        >
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
               {error}

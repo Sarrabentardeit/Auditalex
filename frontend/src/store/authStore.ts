@@ -37,11 +37,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         return false;
       }
 
-      logger.log('[AuthStore] Tentative de connexion pour:', email);
       const response = await authApi.login(email.trim(), password);
-      
-      // Logger la réponse pour le debug
-      logger.log('[AuthStore] Réponse reçue:', response);
       
       // Gérer deux formats de réponse possibles :
       // Format 1: {token, user} (notre backend)
@@ -49,20 +45,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       let userData: any = null;
       let token: string | null = null;
       
-      const responseAny = response as any; // Type assertion pour gérer les deux formats
-      
-      logger.log('[AuthStore] Analyse de la réponse:', JSON.stringify(responseAny, null, 2));
+      const responseAny = response as any;
       
       if (responseAny && responseAny.user && responseAny.token) {
-        // Format 1: Notre backend
         userData = responseAny.user;
         token = responseAny.token;
-        logger.log('[AuthStore] Format 1 détecté (notre backend)');
       } else if (responseAny && responseAny.success && responseAny.data) {
-        // Format 2: Autre backend - adapter le format
-        logger.log('[AuthStore] Format 2 détecté (autre backend), data complet:', JSON.stringify(responseAny.data, null, 2));
-        
-        // Vérifier que data contient bien les champs nécessaires
         if (!responseAny.data.id || !responseAny.data.email) {
           logger.error('[AuthStore] Données incomplètes dans response.data:', responseAny.data);
           throw new Error('Données utilisateur incomplètes dans la réponse');
@@ -73,22 +61,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           email: responseAny.data.email,
           name: responseAny.data.name || (responseAny.data.firstName && responseAny.data.lastName 
             ? `${responseAny.data.firstName} ${responseAny.data.lastName}`.trim()
-            : responseAny.data.email?.split('@')[0] || 'Utilisateur'), // Utiliser name si disponible, sinon firstName+lastName, sinon email
-          role: responseAny.data.role || 'auditor', // Utiliser le rôle si disponible
+            : responseAny.data.email?.split('@')[0] || 'Utilisateur'),
+          role: responseAny.data.role || 'auditor',
         };
-        // Pour l'autre backend, le token pourrait être dans response.token, response.data.token, ou response.data.accessToken
         token = responseAny.token || responseAny.data.token || responseAny.data.accessToken || null;
-        logger.log('[AuthStore] Token extrait:', token ? 'Oui' : 'Non');
-        logger.log('[AuthStore] userData créé:', userData);
       }
       
-      // Si on a les données utilisateur, continuer même sans token (on créera un token temporaire)
       if (userData) {
-        logger.log('[AuthStore] userData valide, traitement de la connexion...');
-        // Si pas de token mais qu'on a les données, créer un token factice ou utiliser l'ID comme token
         if (!token) {
-          logger.warn('[AuthStore] Aucun token trouvé, utilisation de l\'ID comme token');
-          token = `temp_${userData.id}`; // Utiliser l'ID comme token temporaire avec préfixe
+          token = `temp_${userData.id}`;
         }
         // Convertir la réponse API en format User
         const user: User = {
@@ -131,8 +112,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           currentUser: user, 
           isAuthenticated: true 
         });
-        
-        logger.log('[AuthStore] Connexion réussie pour:', user.name);
         return true;
       } else {
         logger.error('[AuthStore] Aucune donnée utilisateur trouvée dans la réponse');
@@ -199,7 +178,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           logger.warn('[AuthStore] Impossible de sauvegarder currentUser:', e);
         }
         set({ currentUser: user, isAuthenticated: true });
-        logger.log('[AuthStore] Utilisateur vérifié via /auth/me:', user.id);
       } else {
         authApi.logout();
         set({ currentUser: null, isAuthenticated: false });

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
@@ -15,7 +15,11 @@ import {
   AccordionSummary,
   AccordionDetails,
   Skeleton,
+  TextField,
+  InputAdornment,
 } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+import FilterListIcon from '@mui/icons-material/FilterList';
 import { useAuthStore } from '../store/authStore';
 import { useAuditStore } from '../store/auditStore';
 import AddIcon from '@mui/icons-material/Add';
@@ -71,6 +75,8 @@ export default function Dashboard() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'in_progress' | 'completed'>('all');
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -148,14 +154,28 @@ export default function Dashboard() {
 
   // Calculer les statistiques basées sur le status réel
   const totalAudits = audits.length;
-  
-  // Un audit est complété SI ET SEULEMENT SI status === 'completed'
-  // Le status est la source de vérité (géré par le backend)
   const completedAudits = audits.filter(audit => audit.status === 'completed').length;
   const inProgressAudits = audits.filter(audit => audit.status === 'in_progress').length;
 
+  // Audits filtrés par recherche + statut
+  const filteredAudits = useMemo(() => {
+    let result = audits;
+    if (statusFilter !== 'all') {
+      result = result.filter(a => a.status === statusFilter);
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      result = result.filter(a =>
+        (a.adresse || '').toLowerCase().includes(q) ||
+        (a.dateExecution || '').includes(q) ||
+        (a.auditorName || '').toLowerCase().includes(q)
+      );
+    }
+    return result;
+  }, [audits, statusFilter, searchQuery]);
+
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#f8f9fa' }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
       {SnackbarComponent}
       {ConfirmDialogComponent}
       <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
@@ -481,13 +501,51 @@ export default function Dashboard() {
               '&:hover': {
                 boxShadow: `0 6px 20px ${alpha('#1482B7', 0.4)}`,
                 transform: 'translateY(-2px)',
-                background: 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)',
+                background: 'linear-gradient(135deg, #1482B7 0%, #0d5f84 100%)',
               },
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
           >
-            + CRÉER UN NOUVEL AUDIT
+            Créer un nouvel audit
           </Button>
+        </Box>
+
+        {/* Recherche + Filtres */}
+        <Box sx={{ mb: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <TextField
+            placeholder="Rechercher par adresse, date ou auditeur..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            size="small"
+            fullWidth
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon sx={{ color: 'text.secondary', fontSize: 20 }} />
+                </InputAdornment>
+              ),
+            }}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2,
+                bgcolor: 'background.paper',
+              },
+            }}
+          />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+            <FilterListIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+            {(['all', 'in_progress', 'completed'] as const).map((filter) => (
+              <Chip
+                key={filter}
+                label={filter === 'all' ? `Tous (${totalAudits})` : filter === 'in_progress' ? `En cours (${inProgressAudits})` : `Complétés (${completedAudits})`}
+                onClick={() => setStatusFilter(filter)}
+                color={statusFilter === filter ? (filter === 'completed' ? 'success' : filter === 'in_progress' ? 'warning' : 'primary') : 'default'}
+                variant={statusFilter === filter ? 'filled' : 'outlined'}
+                size="small"
+                sx={{ fontWeight: 600, cursor: 'pointer' }}
+              />
+            ))}
+          </Box>
         </Box>
 
         {/* Liste des audits */}
@@ -507,11 +565,34 @@ export default function Dashboard() {
             Mes audits {isAdmin() && '(Tous les audits)'}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {audits.length} {audits.length > 1 ? 'audits' : 'audit'}
+            {filteredAudits.length} {filteredAudits.length > 1 ? 'audits' : 'audit'}
+            {(searchQuery || statusFilter !== 'all') && ` sur ${totalAudits}`}
           </Typography>
         </Box>
 
-        {audits.length === 0 ? (
+        {filteredAudits.length === 0 && audits.length > 0 ? (
+          <Paper
+            elevation={0}
+            sx={{
+              p: { xs: 4, sm: 6 },
+              textAlign: 'center',
+              border: '1px dashed',
+              borderColor: 'divider',
+              borderRadius: 3,
+            }}
+          >
+            <SearchIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
+            <Typography variant="h6" color="text.secondary" fontWeight={600}>
+              Aucun audit ne correspond à votre recherche
+            </Typography>
+            <Button
+              sx={{ mt: 2, textTransform: 'none' }}
+              onClick={() => { setSearchQuery(''); setStatusFilter('all'); }}
+            >
+              Réinitialiser les filtres
+            </Button>
+          </Paper>
+        ) : audits.length === 0 ? (
           <Paper
             elevation={0}
             sx={{
@@ -571,7 +652,7 @@ export default function Dashboard() {
                 
                 // Grouper les audits par auditeur
                 // Normaliser les auditorId pour éviter les doublons (string vs ObjectId)
-                const auditsByAuditor = audits.reduce((acc, audit) => {
+                const auditsByAuditor = filteredAudits.reduce((acc, audit) => {
                   // Normaliser l'ID de l'auditeur (toujours en string)
                   const auditorId = String(audit.auditorId || 'unknown');
                   
@@ -781,6 +862,7 @@ export default function Dashboard() {
                                       <IconButton
                                         size="small"
                                         color="error"
+                                        aria-label={`Supprimer l'audit du ${format(new Date(audit.dateExecution), 'dd/MM/yyyy', { locale: fr })}`}
                                         onClick={(e) => {
                                           e.stopPropagation();
                                           handleDeleteAudit(audit.id, audit.dateExecution);
@@ -796,6 +878,9 @@ export default function Dashboard() {
                                     </Box>
                                   </Box>
                                   <Box
+                                    role="button"
+                                    tabIndex={0}
+                                    onKeyDown={(e) => e.key === 'Enter' && handleViewAudit(audit.id)}
                                     sx={{
                                       display: 'flex',
                                       alignItems: 'center',
@@ -806,6 +891,8 @@ export default function Dashboard() {
                                       borderRadius: 1.5,
                                       bgcolor: alpha('#000', 0.02),
                                       cursor: 'pointer',
+                                      outline: 'none',
+                                      '&:focus-visible': { outline: '2px solid #1482B7', outlineOffset: 2 },
                                     }}
                                     onClick={() => handleViewAudit(audit.id)}
                                   >
@@ -838,7 +925,7 @@ export default function Dashboard() {
             </Box>
           ) : (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              {groupAuditsByDay(audits).map(({ dayKey, dayLabel, audits: dayAudits }) => (
+              {groupAuditsByDay(filteredAudits).map(({ dayKey, dayLabel, audits: dayAudits }) => (
                 <Box key={dayKey}>
                   <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2, color: 'text.secondary', fontSize: '0.95rem' }}>
                     {dayLabel}
@@ -899,6 +986,7 @@ export default function Dashboard() {
                           <IconButton
                             size="small"
                             color="error"
+                            aria-label={`Supprimer l'audit du ${format(new Date(audit.dateExecution), 'dd/MM/yyyy', { locale: fr })}`}
                             onClick={(e) => {
                               e.stopPropagation();
                               handleDeleteAudit(audit.id, audit.dateExecution);
@@ -914,6 +1002,9 @@ export default function Dashboard() {
                         </Box>
                       </Box>
                       <Box
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => e.key === 'Enter' && handleViewAudit(audit.id)}
                         sx={{
                           display: 'flex',
                           alignItems: 'center',
@@ -924,6 +1015,8 @@ export default function Dashboard() {
                           borderRadius: 1.5,
                           bgcolor: alpha('#000', 0.02),
                           cursor: 'pointer',
+                          outline: 'none',
+                          '&:focus-visible': { outline: '2px solid #1482B7', outlineOffset: 2 },
                         }}
                         onClick={() => handleViewAudit(audit.id)}
                       >

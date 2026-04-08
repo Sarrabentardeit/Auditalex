@@ -1,8 +1,7 @@
-import { 
-  Box, 
-  Button, 
-  ButtonGroup, 
-  TextField, 
+import {
+  Box,
+  Button,
+  TextField,
   Typography,
   Divider,
   Chip,
@@ -12,10 +11,16 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  IconButton
+  IconButton,
+  alpha,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import InfoIcon from '@mui/icons-material/Info';
+import ReportProblemIcon from '@mui/icons-material/ReportProblem';
+import CancelIcon from '@mui/icons-material/Cancel';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import type { AuditItem } from '../types';
 import { NOTE_LABELS } from '../types';
 import { useAuditStore } from '../store/auditStore';
@@ -102,7 +107,7 @@ function ItemCard({ item, categoryId, categoryItems: _categoryItems }: ItemCardP
     }
   }, [categoryId, item.id, updateObservationAction]);
 
-  const getNoteColor = (note?: number) => {
+  const getNoteColor = (note?: number): 'default' | 'success' | 'info' | 'warning' | 'error' => {
     if (note === undefined) return 'default';
     if (note === 1.0) return 'success';
     if (note === 0.7) return 'info';
@@ -137,85 +142,131 @@ function ItemCard({ item, categoryId, categoryItems: _categoryItems }: ItemCardP
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
           <Chip
             label={`Note: ${item.note} (${NOTE_LABELS[item.note]})`}
-            color={getNoteColor(item.note) as any}
+            color={getNoteColor(item.note)}
             size="small"
           />
         </Box>
       )}
 
-      {/* Non-Conformités Selection - Cacher la mécanique (classification, nombres) */}
+      {/* Non-Conformités Selection */}
       <Box>
-        <Typography variant="subtitle2" gutterBottom>
+        <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 600 }}>
           État de l'item :
         </Typography>
         {item.classification === 'binary' ? (
-          <ButtonGroup 
-            variant="outlined" 
-            fullWidth 
-            sx={{ 
-              flexDirection: 'row',
-              flexWrap: 'wrap',
-              '& .MuiButton-root': { minHeight: 44 }
-            }}
-          >
-            <Button
-              variant={item.numberOfNonConformities === 0 ? 'contained' : 'outlined'}
-              onClick={() => handleNonConformitiesChange(item.numberOfNonConformities === 0 ? null : 0)}
-              color="success"
-            >
-              Conforme (1)
-            </Button>
-            <Button
-              variant={item.numberOfNonConformities === 1 ? 'contained' : 'outlined'}
-              onClick={() => handleNonConformitiesChange(item.numberOfNonConformities === 1 ? null : 1)}
-              color="error"
-            >
-              Non-conforme (0)
-            </Button>
-          </ButtonGroup>
+          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
+            {[
+              { value: 0, label: 'Conforme', sublabel: 'Note : 1', icon: <CheckCircleIcon />, color: '#8CB33A', activeText: '#fff' },
+              { value: 1, label: 'Non-conforme', sublabel: 'Note : 0', icon: <CancelIcon />, color: '#d32f2f', activeText: '#fff' },
+            ].map(({ value, label, sublabel, icon, color, activeText }) => {
+              const isSelected = item.numberOfNonConformities === value;
+              return (
+                <Box
+                  key={value}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => handleNonConformitiesChange(isSelected ? null : value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleNonConformitiesChange(isSelected ? null : value)}
+                  sx={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center',
+                    gap: 0.75, p: { xs: 1.5, sm: 2 },
+                    border: '2px solid',
+                    borderColor: isSelected ? color : alpha(color, 0.25),
+                    borderRadius: 2.5,
+                    cursor: 'pointer',
+                    bgcolor: isSelected ? alpha(color, 0.08) : 'background.paper',
+                    transition: 'all 0.18s ease',
+                    outline: 'none',
+                    '&:hover': { borderColor: color, bgcolor: alpha(color, 0.05) },
+                    '&:focus-visible': { outline: `2px solid ${color}`, outlineOffset: 2 },
+                    userSelect: 'none',
+                  }}
+                >
+                  <Box sx={{
+                    width: 40, height: 40, borderRadius: '50%',
+                    bgcolor: isSelected ? color : alpha(color, 0.1),
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    transition: 'all 0.18s ease',
+                  }}>
+                    {React.cloneElement(icon, {
+                      sx: { fontSize: 22, color: isSelected ? activeText : color },
+                    })}
+                  </Box>
+                  <Typography variant="body2" fontWeight={isSelected ? 700 : 500} sx={{ color: isSelected ? color : 'text.primary', lineHeight: 1.2, textAlign: 'center' }}>
+                    {label}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: isSelected ? alpha(color, 0.8) : 'text.secondary' }}>
+                    {sublabel}
+                  </Typography>
+                  {isSelected && (
+                    <CheckCircleOutlineIcon sx={{ fontSize: 14, color, position: 'absolute', top: 8, right: 8 }} />
+                  )}
+                </Box>
+              );
+            })}
+          </Box>
         ) : (
-          <ButtonGroup 
-            variant="outlined" 
-            fullWidth 
-            sx={{ 
-              flexDirection: 'row',
-              flexWrap: 'wrap',
-              '& .MuiButton-root': { minHeight: 44 }
-            }}
-          >
-            <Button
-              variant={item.numberOfNonConformities === 0 ? 'contained' : 'outlined'}
-              onClick={() => handleNonConformitiesChange(item.numberOfNonConformities === 0 ? null : 0)}
-              color="success"
-            >
-              Conforme (1)
-            </Button>
-            <Button
-              variant={item.numberOfNonConformities === 1 ? 'contained' : 'outlined'}
-              onClick={() => handleNonConformitiesChange(item.numberOfNonConformities === 1 ? null : 1)}
-              color="info"
-            >
-              Mineur (0,7)
-            </Button>
-            <Button
-              variant={item.numberOfNonConformities === 2 ? 'contained' : 'outlined'}
-              onClick={() => handleNonConformitiesChange(item.numberOfNonConformities === 2 ? null : 2)}
-              color="warning"
-            >
-              Moyen (0,3)
-            </Button>
-            <Button
-              variant={item.numberOfNonConformities !== null && item.numberOfNonConformities >= 3 ? 'contained' : 'outlined'}
-              onClick={() => handleNonConformitiesChange(item.numberOfNonConformities !== null && item.numberOfNonConformities >= 3 ? null : 3)}
-              color="error"
-            >
-              Majeur (0)
-            </Button>
-          </ButtonGroup>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(4, 1fr)' }, gap: 1.5 }}>
+            {[
+              { value: 0, label: 'Conforme', sublabel: 'Note : 1', icon: <CheckCircleIcon />, color: '#8CB33A' },
+              { value: 1, label: 'Mineur', sublabel: 'Note : 0,7', icon: <InfoIcon />, color: '#1482B7' },
+              { value: 2, label: 'Moyen', sublabel: 'Note : 0,3', icon: <ReportProblemIcon />, color: '#ed6c02' },
+              { value: 3, label: 'Majeur', sublabel: 'Note : 0', icon: <CancelIcon />, color: '#d32f2f' },
+            ].map(({ value, label, sublabel, icon, color }) => {
+              const isSelected = value === 3
+                ? (item.numberOfNonConformities !== null && item.numberOfNonConformities >= 3)
+                : item.numberOfNonConformities === value;
+              const handleClick = () => handleNonConformitiesChange(isSelected ? null : value);
+              return (
+                <Box
+                  key={value}
+                  role="button"
+                  tabIndex={0}
+                  onClick={handleClick}
+                  onKeyDown={(e) => e.key === 'Enter' && handleClick()}
+                  sx={{
+                    position: 'relative',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center',
+                    gap: 0.75, p: { xs: 1.25, sm: 1.75 },
+                    border: '2px solid',
+                    borderColor: isSelected ? color : alpha(color, 0.25),
+                    borderRadius: 2.5,
+                    cursor: 'pointer',
+                    bgcolor: isSelected ? alpha(color, 0.08) : 'background.paper',
+                    transition: 'all 0.18s ease',
+                    outline: 'none',
+                    '&:hover': { borderColor: color, bgcolor: alpha(color, 0.05) },
+                    '&:focus-visible': { outline: `2px solid ${color}`, outlineOffset: 2 },
+                    userSelect: 'none',
+                  }}
+                >
+                  <Box sx={{
+                    width: { xs: 34, sm: 40 }, height: { xs: 34, sm: 40 }, borderRadius: '50%',
+                    bgcolor: isSelected ? color : alpha(color, 0.1),
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    transition: 'all 0.18s ease',
+                  }}>
+                    {React.cloneElement(icon, {
+                      sx: { fontSize: { xs: 18, sm: 22 }, color: isSelected ? '#fff' : color },
+                    })}
+                  </Box>
+                  <Typography variant="body2" fontWeight={isSelected ? 700 : 500} sx={{ color: isSelected ? color : 'text.primary', lineHeight: 1.2, textAlign: 'center', fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+                    {label}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: isSelected ? alpha(color, 0.8) : 'text.secondary', fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
+                    {sublabel}
+                  </Typography>
+                  {isSelected && (
+                    <CheckCircleOutlineIcon sx={{ fontSize: 13, color, position: 'absolute', top: 6, right: 6 }} />
+                  )}
+                </Box>
+              );
+            })}
+          </Box>
         )}
         {item.numberOfNonConformities === null && (
-          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block', fontStyle: 'italic' }}>
-            Sélectionnez un état pour cet item
+          <Typography variant="caption" color="text.secondary" sx={{ mt: 1.5, display: 'block', fontStyle: 'italic' }}>
+            Touchez une carte pour sélectionner l'état de cet item
           </Typography>
         )}
       </Box>
@@ -505,6 +556,7 @@ function ItemCard({ item, categoryId, categoryItems: _categoryItems }: ItemCardP
                   <IconButton
                     size="small"
                     color="error"
+                    aria-label={`Supprimer le commentaire : ${obs.text}`}
                     onClick={() => handleRemoveObservation(obs.id)}
                   >
                     <DeleteIcon fontSize="small" />

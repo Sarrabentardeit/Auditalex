@@ -2,14 +2,17 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
-  Container,
   Paper,
   TextField,
   Button,
   Typography,
   Alert,
   CircularProgress,
+  InputAdornment,
+  alpha,
 } from '@mui/material';
+import EmailIcon from '@mui/icons-material/Email';
+import LockIcon from '@mui/icons-material/Lock';
 import { useAuthStore } from '../store/authStore';
 import { loadCategoriesFromJSON } from '../services/dataLoader';
 
@@ -24,12 +27,10 @@ export default function Login() {
 
   useEffect(() => {
     checkAuth();
-    // Précharger le JSON pour accélérer l'ouverture des audits après connexion
     loadCategoriesFromJSON().catch(() => {});
   }, [checkAuth]);
 
   useEffect(() => {
-    // Rediriger si déjà authentifié
     if (isAuthenticated) {
       navigate('/dashboard');
     }
@@ -42,7 +43,6 @@ export default function Login() {
     setLoading(true);
 
     try {
-      // Validation basique
       if (!email.trim() || !password) {
         setError('Veuillez remplir tous les champs');
         setLoading(false);
@@ -50,19 +50,16 @@ export default function Login() {
       }
 
       const success = await login(email.trim(), password);
-      
+
       if (success) {
         navigate('/dashboard');
       } else {
-        // Le message d'erreur sera géré par le catch ci-dessous
         setError('Email ou mot de passe incorrect, ou compte désactivé.');
       }
     } catch (err: any) {
       console.error('Erreur de connexion:', err);
-      
-      // Gérer l'erreur 429 (Too Many Requests)
       if (err?.status === 429) {
-        const retrySeconds = err?.data?.retryAfter || 900; // 15 minutes par défaut
+        const retrySeconds = err?.data?.retryAfter || 900;
         setRetryAfter(retrySeconds);
         setError(`Trop de tentatives de connexion. Veuillez attendre ${Math.ceil(retrySeconds / 60)} minutes avant de réessayer.`);
       } else if (err?.message?.includes('connecter au serveur')) {
@@ -76,31 +73,70 @@ export default function Login() {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ px: { xs: 1, sm: 2 } }}>
-      <Box
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'linear-gradient(135deg, #0F6A94 0%, #1482B7 45%, #6F8F2E 100%)',
+        p: { xs: 2, sm: 3 },
+      }}
+    >
+      {/* Cercles décoratifs en arrière-plan */}
+      <Box sx={{ position: 'fixed', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
+        <Box sx={{
+          position: 'absolute', top: '-15%', right: '-10%',
+          width: { xs: 260, md: 400 }, height: { xs: 260, md: 400 },
+          borderRadius: '50%',
+          background: alpha('#8CB33A', 0.15),
+        }} />
+        <Box sx={{
+          position: 'absolute', bottom: '-10%', left: '-8%',
+          width: { xs: 200, md: 320 }, height: { xs: 200, md: 320 },
+          borderRadius: '50%',
+          background: alpha('#ffffff', 0.07),
+        }} />
+        <Box sx={{
+          position: 'absolute', top: '40%', left: '5%',
+          width: 120, height: 120,
+          borderRadius: '50%',
+          background: alpha('#8CB33A', 0.1),
+        }} />
+      </Box>
+
+      <Paper
+        elevation={0}
         sx={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          position: 'relative',
+          zIndex: 1,
+          width: '100%',
+          maxWidth: 420,
+          borderRadius: 4,
+          overflow: 'hidden',
+          boxShadow: '0 24px 64px rgba(0,0,0,0.25)',
         }}
       >
-        <Paper
-          elevation={3}
+        {/* Bandeau couleur en haut */}
+        <Box
           sx={{
-            p: { xs: 2, sm: 4 },
-            width: '100%',
-            maxWidth: 400,
-            borderRadius: 3,
-            mx: { xs: 1, sm: 0 },
+            background: 'linear-gradient(135deg, #1482B7 0%, #0F6A94 100%)',
+            py: { xs: 3, sm: 4 },
+            px: { xs: 3, sm: 4 },
+            textAlign: 'center',
           }}
         >
-          {/* Logo Alexann' */}
           <Box
             sx={{
-              display: 'flex',
+              display: 'inline-flex',
+              alignItems: 'center',
               justifyContent: 'center',
-              mb: 3,
+              bgcolor: '#ffffff',
+              borderRadius: 3,
+              px: 2.5,
+              py: 1.25,
+              mb: 2,
+              boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
             }}
           >
             <Box
@@ -108,36 +144,59 @@ export default function Login() {
               src="/logo.jpeg"
               alt="Alexann'"
               sx={{
-                height: { xs: 50, sm: 60 },
+                height: { xs: 44, sm: 54 },
                 objectFit: 'contain',
                 display: 'block',
               }}
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
+                const wrapper = target.parentElement;
+                if (wrapper) wrapper.style.display = 'none';
+                const fallback = wrapper?.nextElementSibling as HTMLElement;
+                if (fallback) fallback.style.display = 'block';
               }}
             />
           </Box>
-          
-          <Typography 
-            variant="h4" 
-            component="h1" 
-            gutterBottom 
-            align="center" 
-            sx={{ 
-              mb: 2,
+          {/* Fallback texte logo */}
+          <Typography
+            sx={{
+              display: 'none',
               fontFamily: "'Bebas Neue', sans-serif",
-              color: '#1482B7',
-              fontSize: { xs: '1.5rem', sm: '2.125rem' },
+              fontSize: '2rem',
+              color: '#fff',
+              letterSpacing: '0.06em',
+              mb: 2,
             }}
           >
-            Connexion
+            Alex<Box component="span" sx={{ color: '#8CB33A' }}>ann'</Box>
           </Typography>
 
+          <Typography
+            variant="h5"
+            sx={{
+              fontFamily: "'Bebas Neue', sans-serif",
+              color: '#ffffff',
+              letterSpacing: '0.08em',
+              fontSize: { xs: '1.4rem', sm: '1.6rem' },
+              opacity: 0.95,
+            }}
+          >
+            Espace Auditeur
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{ color: alpha('#ffffff', 0.7), mt: 0.5, fontSize: '0.8rem' }}
+          >
+            Hygiène et qualité agroalimentaire
+          </Typography>
+        </Box>
+
+        {/* Formulaire */}
+        <Box sx={{ p: { xs: 3, sm: 4 }, bgcolor: 'background.paper' }}>
           {error && (
-            <Alert 
-              severity={retryAfter ? "warning" : "error"} 
-              sx={{ mb: 2 }}
+            <Alert
+              severity={retryAfter ? 'warning' : 'error'}
+              sx={{ mb: 3, borderRadius: 2 }}
               action={
                 retryAfter && (
                   <Typography variant="caption" color="text.secondary">
@@ -151,42 +210,76 @@ export default function Login() {
           )}
 
           <form onSubmit={handleSubmit}>
-            <TextField
-              fullWidth
-              label="Email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              margin="normal"
-              autoComplete="email"
-              autoFocus
-            />
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <TextField
+                fullWidth
+                label="Adresse email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="email"
+                autoFocus
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <EmailIcon sx={{ color: 'text.secondary', fontSize: 20 }} />
+                    </InputAdornment>
+                  ),
+                }}
+              />
 
-            <TextField
-              fullWidth
-              label="Mot de passe"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              margin="normal"
-              autoComplete="current-password"
-            />
+              <TextField
+                fullWidth
+                label="Mot de passe"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete="current-password"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LockIcon sx={{ color: 'text.secondary', fontSize: 20 }} />
+                    </InputAdornment>
+                  ),
+                }}
+              />
 
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 2 }}
-              disabled={loading}
-            >
-              {loading ? <CircularProgress size={24} /> : 'Se connecter'}
-            </Button>
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                size="large"
+                sx={{
+                  mt: 1,
+                  py: 1.5,
+                  gap: 1,
+                  fontWeight: 700,
+                  fontSize: '1rem',
+                  letterSpacing: '0.03em',
+                  background: 'linear-gradient(135deg, #1482B7 0%, #0F6A94 100%)',
+                  boxShadow: `0 4px 14px ${alpha('#1482B7', 0.4)}`,
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #1482B7 0%, #0a5070 100%)',
+                    boxShadow: `0 6px 20px ${alpha('#1482B7', 0.5)}`,
+                    transform: 'translateY(-1px)',
+                  },
+                  '&:disabled': {
+                    background: 'linear-gradient(135deg, #1482B7 0%, #0F6A94 100%)',
+                    opacity: 0.7,
+                  },
+                }}
+                disabled={loading}
+                aria-busy={loading}
+              >
+                {loading && <CircularProgress size={20} color="inherit" />}
+                {loading ? 'Connexion en cours...' : 'Se connecter'}
+              </Button>
+            </Box>
           </form>
-        </Paper>
-      </Box>
-    </Container>
+        </Box>
+      </Paper>
+    </Box>
   );
 }
-

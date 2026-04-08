@@ -43,11 +43,9 @@ let cachedData: JSONData | null = null;
 // Charger les données depuis le fichier public avec mise en cache
 async function loadJSONData(): Promise<JSONData> {
   if (cachedData !== null) {
-    console.log('[DataLoader] Utilisation du cache pour data_structure.json');
     return cachedData;
   }
   
-  console.log('[DataLoader] Chargement de data_structure.json depuis le serveur...');
   const response = await fetch('/data_structure.json');
   const data: JSONData = await response.json();
   cachedData = data;

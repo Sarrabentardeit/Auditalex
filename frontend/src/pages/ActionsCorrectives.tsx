@@ -81,7 +81,6 @@ export default function ActionsCorrectives() {
   const navigate = useNavigate();
   const { currentAudit, results, updateCorrectiveActions } = useAuditStore();
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-  const [hoveredRow, setHoveredRow] = useState<string | null>(null);
   const { showSuccess, showError, SnackbarComponent } = useSnackbar();
 
   const initialRows = useMemo(() => {
@@ -165,11 +164,11 @@ export default function ActionsCorrectives() {
           </Typography>
           <Button
             variant="contained"
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/dashboard')}
             startIcon={<ArrowBackIcon />}
             sx={{ mt: 2 }}
           >
-            Retour à l'accueil
+            Retour au tableau de bord
           </Button>
         </Box>
       </Layout>
@@ -382,8 +381,6 @@ export default function ActionsCorrectives() {
               {rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  onMouseEnter={() => setHoveredRow(row.id)}
-                  onMouseLeave={() => setHoveredRow(null)}
                   sx={{
                     '&:hover': {
                       backgroundColor: 'rgba(0, 0, 0, 0.015)',
@@ -485,12 +482,14 @@ export default function ActionsCorrectives() {
                   >
                     <IconButton
                       size="small"
+                      aria-label="Supprimer cette ligne"
                       onClick={() => handleDeleteRow(row.id)}
                       sx={{
-                        opacity: hoveredRow === row.id ? 1 : 0,
-                        transition: 'opacity 0.15s',
                         color: '#d32f2f',
                         padding: '4px',
+                        opacity: 0.6,
+                        '&:hover': { opacity: 1 },
+                        transition: 'opacity 0.15s',
                       }}
                     >
                       <DeleteIcon sx={{ fontSize: 18 }} />

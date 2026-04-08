@@ -32,7 +32,7 @@ export default function Layout({ children }: LayoutProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const menuItems = [
-    { text: 'Accueil', icon: <HomeIcon />, path: '/' },
+    { text: 'Tableau de bord', icon: <HomeIcon />, path: '/dashboard' },
   ];
 
   const handleNavigation = (path: string) => {
@@ -52,6 +52,7 @@ export default function Layout({ children }: LayoutProps) {
               color="inherit"
               edge="start"
               onClick={() => setDrawerOpen(true)}
+              aria-label="Ouvrir le menu"
               sx={{ mr: 2 }}
             >
               <MenuIcon />
@@ -99,14 +100,14 @@ export default function Layout({ children }: LayoutProps) {
               className="logo-fallback"
               sx={{
                 fontFamily: "'Bebas Neue', sans-serif",
-                fontSize: { xs: '1.1rem', md: '1.25rem' },
+                fontSize: { xs: '1.3rem', md: '1.5rem' },
                 color: '#ffffff',
-                display: 'none', // Caché par défaut, affiché seulement si le logo ne charge pas
+                display: 'none',
                 alignItems: 'center',
-                gap: 1,
+                letterSpacing: '0.04em',
               }}
             >
-              <Box component="span" sx={{ color: '#1482B7' }}>
+              <Box component="span" sx={{ color: '#ffffff' }}>
                 Alex
               </Box>
               <Box component="span" sx={{ color: '#8CB33A' }}>
@@ -194,7 +195,7 @@ export default function Layout({ children }: LayoutProps) {
             fontSize: { xs: '0.75rem', sm: '0.875rem' },
           }}
         >
-          © 2025{' '}
+          © {new Date().getFullYear()}{' '}
           <Box component="span" sx={{ color: '#1482B7', fontWeight: 600 }}>
             Alex
           </Box>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Typography, Box, Paper, Button, CircularProgress, TextField, Tooltip, Skeleton } from '@mui/material';
+import { Typography, Box, Paper, Button, CircularProgress, TextField, Tooltip, Skeleton, alpha } from '@mui/material';
 import { useAuditStore } from '../store/auditStore';
 import { useAuthStore } from '../store/authStore';
 import CategoryCard from '../components/CategoryCard';
@@ -8,11 +8,14 @@ import { useNavigate, useParams } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import { generatePDFReport } from '../utils/pdfExport';
+import AssessmentIcon from '@mui/icons-material/Assessment';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import EuroIcon from '@mui/icons-material/Euro';
 import { loadCategoriesFromJSON } from '../services/dataLoader';
 import { calculateResults } from '../utils/calculations';
 import { logger } from '../utils/logger';
 import { useSnackbar } from '../hooks/useSnackbar';
+import { usePDFExport } from '../hooks/usePDFExport';
 
 export default function Audit() {
   const navigate = useNavigate();
@@ -25,7 +28,7 @@ export default function Audit() {
   const loadAudit = useAuditStore((state) => state.loadAudit);
   const createAudit = useAuditStore((state) => state.createAudit);
   const markAuditAsCompleted = useAuditStore((state) => state.markAuditAsCompleted);
-  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const { openPDFPreview, isGenerating: isGeneratingPDF, PDFExportModal } = usePDFExport();
   // Skeleton immédiat à l'ouverture d'un audit (id présent = on charge)
   const [loading, setLoading] = useState(!!(id && id !== 'new'));
   const [expandedItemKey, setExpandedItemKey] = useState<string | null>(null);
@@ -80,6 +83,9 @@ export default function Audit() {
   const lastLoadedId = React.useRef<string | undefined>(undefined);
 
   useEffect(() => {
+    // Scroll to top à chaque ouverture d'audit
+    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+
     // Réinitialiser quand on change d'audit (navigation vers un autre)
     if (id !== lastLoadedId.current) {
       hasInitialized.current = false;
@@ -102,7 +108,7 @@ export default function Audit() {
         try {
           await loadAudit(id);
         } catch (error) {
-          logger.error('Erreur lors du chargement de l\'audit:', error);
+          logger.error('Erreur chargement audit:', error);
           showError('Impossible de charger l\'audit. Vérifiez votre connexion ou que l\'audit existe.');
           navigate('/dashboard');
         } finally {
@@ -118,27 +124,21 @@ export default function Audit() {
             !currentUser || currentAudit.auditorId === currentUser.id;
 
           if (belongsToCurrentUser && currentAudit.status !== 'completed') {
-            // Audit en cours de l'utilisateur : rediriger vers son audit
-            logger.warn('[Audit] Un audit en cours existe déjà. Redirection:', currentAudit.id);
             navigate(`/audit/${currentAudit.id}`);
             return;
           }
 
-          // Audit terminé ou appartenant à un autre utilisateur : réinitialiser
-          logger.log('[Audit] Réinitialisation de currentAudit avant création.');
           useAuditStore.setState({ currentAudit: null });
         }
         
         setLoading(true);
         hasInitialized.current = true;
         try {
-          logger.log('[Audit] Création d\'un nouvel audit...');
           const categories = await loadCategoriesFromJSON();
           const today = new Date().toISOString().split('T')[0];
           await createAudit(today, '', categories);
-          logger.log('[Audit] Audit créé avec succès');
         } catch (error) {
-          logger.error('Erreur lors de la création de l\'audit:', error);
+          logger.error('Erreur création audit:', error);
           hasInitialized.current = false; // Permettre de réessayer en cas d'erreur
           navigate('/dashboard');
         } finally {
@@ -154,22 +154,14 @@ export default function Audit() {
   const handleExportPDF = async () => {
     const pdfResults = results || memoizedResults;
     if (!currentAudit || !pdfResults) {
-      logger.error('Erreur: currentAudit ou results est null', { currentAudit, results: pdfResults });
       showError('Impossible de générer le PDF : audit ou résultats manquants.');
       return;
     }
-    
-    setIsGeneratingPDF(true);
     try {
-      logger.log('Début de la génération du PDF...', { audit: currentAudit, results: pdfResults });
-      await generatePDFReport(currentAudit, pdfResults);
-      logger.log('PDF généré avec succès');
-      showSuccess('PDF généré avec succès !');
+      await openPDFPreview(currentAudit, pdfResults);
     } catch (error) {
-      logger.error('Erreur lors de la génération du PDF:', error);
+      logger.error('Erreur génération PDF:', error);
       showError(`Erreur lors de la génération du PDF: ${error instanceof Error ? error.message : String(error)}`);
-    } finally {
-      setIsGeneratingPDF(false);
     }
   };
 
@@ -239,6 +231,7 @@ export default function Audit() {
   return (
     <Layout>
       {SnackbarComponent}
+      {PDFExportModal}
       <Box>
         {/* Header */}
         <Box sx={{ mb: 3 }}>
@@ -260,15 +253,19 @@ export default function Audit() {
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
               {displayResults && (
                 <Button
-                  variant="outlined"
+                  variant="contained"
                   color="primary"
                   startIcon={isGeneratingPDF ? <CircularProgress size={16} color="inherit" /> : <PictureAsPdfIcon />}
                   onClick={handleExportPDF}
                   disabled={isGeneratingPDF}
                   size="small"
-                  sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
+                  sx={{
+                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                    background: 'linear-gradient(135deg, #1482B7 0%, #0F6A94 100%)',
+                    '&:hover': { background: 'linear-gradient(135deg, #1482B7 0%, #0a5070 100%)' },
+                  }}
                 >
-                  {isGeneratingPDF ? 'Génération...' : 'Exporter en PDF'}
+                  {isGeneratingPDF ? 'Génération...' : 'Exporter PDF'}
                 </Button>
               )}
               <Tooltip
@@ -276,7 +273,7 @@ export default function Audit() {
               >
                 <span>
                   <Button
-                    variant="outlined"
+                    variant={allItemsControlled ? 'contained' : 'outlined'}
                     color="success"
                     size="small"
                     disabled={!allItemsControlled}
@@ -286,7 +283,7 @@ export default function Audit() {
                         await new Promise(resolve => setTimeout(resolve, 300));
                         navigate('/dashboard');
                       } catch (error) {
-                        logger.error('Erreur lors de la finalisation de l\'audit:', error);
+                        logger.error('Erreur finalisation audit:', error);
                         showError('Erreur lors de la finalisation de l\'audit. Veuillez réessayer.');
                       }
                     }}
@@ -367,7 +364,7 @@ export default function Audit() {
               variant="caption" 
               sx={{ 
                 color: 'text.secondary',
-                fontSize: '0.7rem',
+                fontSize: '0.75rem',
                 display: 'block',
                 lineHeight: 1.5,
                 letterSpacing: '0.01em'
@@ -379,52 +376,98 @@ export default function Audit() {
         </Box>
 
         {/* Results Dashboard */}
-        {displayResults && (
-          <Box sx={{ 
-            display: 'grid', 
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
-            gap: 2,
-            mb: 3 
-          }}>
-            <Paper sx={{ p: 2 }}>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Score Total
-              </Typography>
-              <Typography variant="h4" fontWeight="bold" color={displayResults.totalScore !== null ? 'primary' : 'text.secondary'}>
-                {displayResults.auditedCount !== undefined && displayResults.totalCount !== undefined
-                  ? `${displayResults.auditedCount}/${displayResults.totalCount} · `
-                  : ''}
-                {displayResults.totalScore !== null ? `${displayResults.totalScore.toFixed(1)}%` : '— %'}
-              </Typography>
-            </Paper>
+        {displayResults && (() => {
+          const scoreColor = '#1482B7';
+          const koColor = displayResults.numberOfKO > 0 ? '#d32f2f' : '#8CB33A';
+          const fineColor = displayResults.potentialFines > 0 ? '#ed6c02' : '#8CB33A';
 
-            <Paper sx={{ p: 2 }}>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Nombre de KO
-              </Typography>
-              <Typography
-                variant="h4"
-                fontWeight="bold"
-                color={displayResults.numberOfKO > 0 ? 'error' : 'success'}
-              >
-                {displayResults.numberOfKO}
-              </Typography>
+          const statCard = (
+            icon: React.ReactNode,
+            label: string,
+            value: React.ReactNode,
+            accentColor: string,
+            sub?: string
+          ) => (
+            <Paper
+              elevation={0}
+              sx={{
+                p: { xs: 2, sm: 2.5 },
+                border: '1px solid',
+                borderColor: alpha(accentColor, 0.2),
+                borderRadius: 3,
+                position: 'relative',
+                overflow: 'hidden',
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0, left: 0, right: 0,
+                  height: 3,
+                  bgcolor: accentColor,
+                },
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, mb: 0.5 }}>
+                    {label}
+                  </Typography>
+                  <Typography
+                    variant="h4"
+                    fontWeight={700}
+                    sx={{ color: accentColor, lineHeight: 1.2, fontSize: { xs: '1.6rem', sm: '2rem' } }}
+                  >
+                    {value}
+                  </Typography>
+                  {sub && (
+                    <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                      {sub}
+                    </Typography>
+                  )}
+                </Box>
+                <Box sx={{
+                  width: 44, height: 44, borderRadius: 2, flexShrink: 0, ml: 1.5,
+                  bgcolor: alpha(accentColor, 0.1),
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  {icon}
+                </Box>
+              </Box>
             </Paper>
+          );
 
-            <Paper sx={{ p: 2 }}>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Amendes Potentielles
-              </Typography>
-              <Typography
-                variant="h4"
-                fontWeight="bold"
-                color={displayResults.potentialFines > 0 ? 'warning.main' : 'success'}
-              >
-                {displayResults.potentialFines.toFixed(0)} €
-              </Typography>
-            </Paper>
-          </Box>
-        )}
+          return (
+            <Box sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
+              gap: 2,
+              mb: 3,
+            }}>
+              {statCard(
+                <AssessmentIcon sx={{ fontSize: 24, color: scoreColor }} />,
+                'Score Total',
+                displayResults.totalScore !== null ? `${displayResults.totalScore.toFixed(1)}%` : '— %',
+                scoreColor,
+                displayResults.auditedCount !== undefined && displayResults.totalCount !== undefined
+                  ? `${displayResults.auditedCount} / ${displayResults.totalCount} items contrôlés`
+                  : undefined,
+              )}
+              {statCard(
+                <WarningAmberIcon sx={{ fontSize: 24, color: koColor }} />,
+                'Non-conformités KO',
+                displayResults.numberOfKO,
+                koColor,
+                displayResults.numberOfKO > 0 ? 'Violations engendrant une amende' : 'Aucun KO détecté',
+              )}
+              {statCard(
+                <EuroIcon sx={{ fontSize: 24, color: fineColor }} />,
+                'Amendes Potentielles',
+                `${displayResults.potentialFines.toFixed(0)} €`,
+                fineColor,
+                displayResults.potentialFines > 0 ? `${displayResults.numberOfKO} KO × 2 250 €` : 'Aucune amende',
+              )}
+            </Box>
+          );
+        })()}
 
         {/* Categories */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>

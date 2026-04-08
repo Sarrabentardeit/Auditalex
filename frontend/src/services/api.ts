@@ -107,9 +107,10 @@ async function request<T>(
       // Si erreur 401, déconnecter l'utilisateur (sauf pour /auth/login où c'est normal)
       if (response.status === 401 && !endpoint.includes('/auth/login')) {
         removeAuthToken();
-        // Ne pas rediriger si on est déjà sur la page de login
         if (window.location.pathname !== '/login') {
-          window.location.href = '/login';
+          // Dispatch un événement personnalisé pour une redirection gracieuse
+          // (permet à l'app de sauvegarder l'état avant de rediriger)
+          window.dispatchEvent(new CustomEvent('auth:sessionExpired'));
         }
       }
       
@@ -182,7 +183,6 @@ export const authApi = {
       
       if (response && response.token) {
         setAuthToken(response.token);
-        logger.log('[API] Login successful');
       }
       
       return response;
@@ -197,7 +197,6 @@ export const authApi = {
    */
   logout(): void {
     removeAuthToken();
-    logger.log('[API] Logged out');
   },
 
   /**
