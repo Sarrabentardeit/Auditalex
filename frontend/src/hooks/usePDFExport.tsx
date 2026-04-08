@@ -14,7 +14,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import DownloadIcon from '@mui/icons-material/Download';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import { generatePDFReport, generatePDFReportAsBase64 } from '../utils/pdfExport';
+import { generatePDFReportAsBase64 } from '../utils/pdfExport';
 import type { Audit, AuditResults } from '../types';
 
 interface PDFState {

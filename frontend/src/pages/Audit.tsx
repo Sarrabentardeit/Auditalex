@@ -32,7 +32,7 @@ export default function Audit() {
   // Skeleton immédiat à l'ouverture d'un audit (id présent = on charge)
   const [loading, setLoading] = useState(!!(id && id !== 'new'));
   const [expandedItemKey, setExpandedItemKey] = useState<string | null>(null);
-  const { showSuccess, showError, SnackbarComponent } = useSnackbar();
+  const { showError, SnackbarComponent } = useSnackbar();
   
   // États locaux pour les champs de texte (réactivité immédiate)
   const [localDate, setLocalDate] = useState<string>('');

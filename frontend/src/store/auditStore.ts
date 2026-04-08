@@ -98,7 +98,7 @@ function removeAuditFromLocal(auditId: string): void {
 // Helper function pour sauvegarder l'audit via l'API
 // IMPORTANT: Sauvegarder TOUS les audits dans le backend (en cours ET terminés)
 // NOTE: Le PDF n'est pas inclus ici pour éviter les problèmes de taille de payload
-async function saveAuditToBackend(audit: Audit, immediate = false): Promise<string | null> {
+async function saveAuditToBackend(audit: Audit, _immediate = false): Promise<string | null> {
   // Toujours sauvegarder en local comme backup
   saveAuditToLocal(audit);
 
